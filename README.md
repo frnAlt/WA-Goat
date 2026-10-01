@@ -204,7 +204,7 @@ With over **290+ native modules**, WA-Goat covers all operational domains:
 
 ```
 WA-Goat/
-├── wca/              :: Complete WhatsApp Chat API engine (42+ methods)
+├── floppa-wca/       :: Complete native WhatsApp Chat API engine (42+ methods)
 ├── dashboard/        :: Web administration UI, Eta views, static assets
 ├── scripts/cmds/     :: GoatBot V2 modular command collection
 ├── scripts/events/   :: Modular background event listeners
@@ -223,7 +223,7 @@ WA-Goat/
 ## 🛠️ Quick Start & Setup
 
 ### 1. Requirements
-* **Runtime**: Node.js `>= 18.0.0` (Node 20+ recommended)
+* **Runtime**: Node.js `>= 18.0.0` (Node 20+ LTS recommended)
 * **Package Manager**: npm `>= 8.0.0`
 * **RAM**: Minimum 512 MB (1 GB+ recommended)
 
@@ -233,7 +233,7 @@ WA-Goat/
 git clone https://github.com/frnAlt/WA-Goat.git
 cd WA-Goat
 
-# Install dependencies
+# Install dependencies (links native floppa-wca from repo folder)
 npm install
 
 # Copy environment template
@@ -247,12 +247,67 @@ npm test
 npm start
 ```
 
-### 3. Login Flow
-When you first run the bot, it will prompt for login mode:
-1. **Pairing Code (Recommended)**: Enter your phone number with country code (e.g. `8801712345678`), copy the 8-digit pairing code shown in terminal, and enter it in WhatsApp → Linked Devices → Link with Phone Number.
-2. **QR Code**: Scan the QR code rendered in the terminal directly using WhatsApp → Linked Devices → Link a Device.
+> **Native WCA Architecture**: WA-Goat does not use an external npm-uploaded package for WCA. The bot fetches and runs the native `floppa-wca` engine directly from the local repository folder (`./floppa-wca`), integrated via `"floppa-wca": "file:./floppa-wca"` in `package.json`. This ensures complete offline privacy, direct customization capability, and protection from upstream registry issues.
 
-Session credentials are saved securely in `auth/` and automatically restore on future restarts.
+---
+
+## 📱 WhatsApp Account Setup & Linking Guide
+
+WA-Goat connects via the official WhatsApp Multi-Device protocol powered by Baileys v7 and native Floppa-WCA. Once linked, your phone does **not** need to stay permanently connected to the same Wi-Fi.
+
+### Option A: Pairing Code Flow (Recommended — No Camera / QR Required)
+
+Pairing code is the easiest and most reliable method, ideal for VPS servers, headless machines, and Docker:
+
+1. **Configure Phone Number**:
+   - In `config.json`, set your WhatsApp number with international country code (digits only, e.g. `"1234567890"`):
+     ```json
+     {
+       "ownerNumber": "1234567890",
+       "adminBot": ["1234567890"]
+     }
+     ```
+   - In `.env`, optionally set your pairing number and default mode:
+     ```env
+     PAIRING_NUMBER="1234567890"
+     LOGIN_MODE="pairing"
+     ```
+2. **Start the Bot**:
+   ```bash
+   npm start
+   ```
+3. **Receive 8-Digit Pairing Code**:
+   - The bot displays an 8-character pairing code in your terminal (e.g. `ABCD-1234`).
+4. **Enter Code in WhatsApp on Your Phone**:
+   - Open WhatsApp on your primary mobile phone.
+   - **Android**: Tap the three vertical dots (`⋮`) in the top-right corner → **Linked Devices** → **Link a device** → **Link with phone number instead**.
+   - **iOS**: Tap **Settings** (gear icon) → **Linked Devices** → **Link a device** → **Link with phone number instead**.
+   - Enter the 8-character pairing code displayed on your console.
+5. **Connection Confirmed**:
+   - Within seconds, WhatsApp verifies credentials and emits session state.
+   - The terminal logs `Connected as: <number>@s.whatsapp.net` and your bot goes live!
+
+### Option B: QR Code Flow
+
+If you prefer scanning an ASCII QR code with your camera:
+
+1. Start the bot and select QR mode (or leave phone number empty in prompt):
+   ```bash
+   npm start
+   ```
+2. An ASCII QR code will be rendered directly in your terminal.
+3. On your phone: Open WhatsApp → **Linked Devices** → **Link a device** → Point your phone camera at the terminal screen.
+
+### 🔐 Session Persistence & Reconnection
+
+* **Encrypted Credentials**: Once connected, multi-device cryptographic session keys are saved in `./auth/`.
+* **Auto-Reconnection**: The bot auto-reconnects on unexpected disconnects or server restarts without re-pairing.
+* **To Switch Numbers or Reset**:
+  ```bash
+  # Delete auth directory to reset credentials
+  node -e "require('fs').rmSync('./auth', { recursive: true, force: true })"
+  npm start
+  ```
 
 ---
 

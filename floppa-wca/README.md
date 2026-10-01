@@ -55,7 +55,7 @@ npm -v
 
 ## 📦 Installation & Integration
 
-`floppa-wca` is integrated directly as a local module (non-npm uploaded package) inside the WA-Goat repository:
+`floppa-wca` is integrated directly as a local native module (non-npm uploaded package) inside the WA-Goat repository:
 
 ```json
 {
@@ -70,6 +70,8 @@ Or import directly via relative path:
 ```js
 const wca = require('./floppa-wca');
 ```
+
+> **Native Repository Module**: `floppa-wca` is fetched and executed natively directly from the bot repository folder (`./floppa-wca`), completely independent of npm package publishing or remote registries.
 
 ---
 
