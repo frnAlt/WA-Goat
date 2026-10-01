@@ -1,5 +1,7 @@
 
-#  WA-GOAT (FLOPPA-CHATBOT WHATSAPP EDITION)
+<div align="center">
+
+# WA-GOAT (FLOPPA-CHATBOT WHATSAPP EDITION)
 ### *High-Concurrency WhatsApp Microservice Engine & Multi-Agent Framework*
 
 [![Node.js Engine](https://img.shields.io/badge/Node.js-%3E%3D20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
