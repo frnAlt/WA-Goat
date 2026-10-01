@@ -30,56 +30,6 @@
 
 **WA-Goat** is an autonomous, production-ready WhatsApp bot combining the dual-layer architecture of **Knightbot-MD** (WhatsApp socket engine, multi-device session management, connection resilience, media serialization) and **Floppa-Chatbot / GoatBot V2** (GoatBot V2 command dispatching, modular events, multi-tier permission matrix, economy system, thread/user storage controllers, moderation rules, and 290+ commands).
 
-```mermaid
-flowchart TD
-    subgraph Ingress ["📡 Ingress & WhatsApp Protocol Layer"]
-        WA["WhatsApp Multi-Device Gateway"] <-->|Noise E2EE WebSocket| BAILEYS["Baileys v7.0.0-rc14 Socket Engine\n(MultiFileAuthState / QR & Pairing Code)"]
-    end
-
-    subgraph CoreEngine ["⚡ Core Microservice Controller (src/index.js)"]
-        BAILEYS --> DISP["Event Ingestion & Router\n(messageHandler.js & eventHandler.js)"]
-        DISP --> AUTH["Identity & Access Control\n(Role 0: User | Role 1: Group Admin | Role 2: Bot Admin | Role 4: Owner)"]
-        AUTH --> RATELIM["Sliding-Window Token Bucket\n(CooldownManager & spamProtection)"]
-        AUTH --> ROUTER["Command Router & Aliases Map\n(!prefix, /slash, and Smart No-Prefix in DMs & Groups)"]
-    end
-
-    subgraph Workers ["🧩 Specialized Autonomous Engines"]
-        ROUTER --> LLM["Multi-LLM AI Core\n(OpenAI, Gemini, Claude, DeepSeek, Groq, Qwen)"]
-        ROUTER --> MEDIA["Universal Media & Sticker Engine\n(FFmpeg Transcoding, WebP EXIF Packing, Jimp Filters)"]
-        ROUTER --> ECO["Virtual Banking & Economy Tier\n(Wallets, Daily, Work, Slot Machine, Dice, Bank)"]
-        ROUTER --> DM["Private DM & Group Engine\n(Seamless 1-on-1 Chats & Group Moderation)"]
-    end
-
-    subgraph Persistence ["💾 High-Availability Data Tier"]
-        DBM["SafeStorage Atomic Lock Engine"] <--> JSONDB[("Atomic JSON Stores\n(users.json, threads.json, global.json)")]
-        DBM <--> SQLITE[("SQLite / Sequelize Store")]
-    end
-
-    Workers --> RES["Message Normalizer & Attachment Formatter"]
-    RES -->|Baileys Protocol Send| WA
-```
-
----
-
-## 🚀 Key Engineering Highlights
-
-### 1. 🛡️ Baileys v7.0.0-rc14 WhatsApp Socket Layer
-* **Multi-Device Session Resilience**: Built upon `@whiskeysockets/baileys@7.0.0-rc14` with automated reconnect backoff, keepalive pings, and credential persistence in `auth/`.
-* **Flexible Authentication**: Log in via interactive QR code in terminal or request an 8-digit **Pairing Code** directly for headless servers.
-* **Dual API Command Dispatcher**: Native support for both modern Baileys `execute(sock, m, args, extra)` and classic GoatBot `onStart({ api, message, event, args, usersData, threadsData, globalData, prefix })`.
-
-### 2. ⚡ Zero-Disk Streaming & Pipeline Processing
-* **Automated FFmpeg Transcoding**: Integrated `@ffmpeg-installer/ffmpeg` and `node-webpmux` for zero-system-dependency animated WebP sticker conversion and EXIF metadata injection.
-* **Pure JavaScript Image Manipulation**: Powered by `jimp@^1.6.1` for blur, crop, resize, and watermark filters without native C++ compilation requirements.
-* **Universal Media Downloader**: Integrated `btch-downloader` and `savetube` APIs for high-definition streaming from YouTube, TikTok, Facebook, and Instagram.
-
-### 3. 💬 Group and Private DM Engine
-* **Universal Command Execution**: Commands run with zero friction in **both Group chats and 1-on-1 Direct Messages (DMs)**.
-* **Intelligent Moderation Safeguard**: Purely administrative actions (`kick`, `promote`, `demote`, `mute`, `tagall`) verify group context gracefully without crashes.
-* **No-Prefix Command Recognition**: When users send commands (like `help`, `ping`, `sticker`, `daily`) in DMs or groups, the router auto-matches without requiring manual prefix typing.
-* **Automatic Chatbot Fallback**: In private chats, conversational queries automatically invoke the multi-LLM AI companion.
-
----
 
 ## 📖 GoatBot V2 Help Command Signature
 
@@ -167,6 +117,26 @@ Type: !help <command> for details
 * **Filters & Image Processing**: Gaussian blur, avatar fetching, cropping, rainbow animated text stickers (`attp`), and text-to-picture (`ttp`).
 
 ---
+## 🚀 Key Engineering Highlights
+
+### 1. 🛡️ Baileys v7.0.0-rc14 WhatsApp Socket Layer
+* **Multi-Device Session Resilience**: Built upon `@whiskeysockets/baileys@7.0.0-rc14` with automated reconnect backoff, keepalive pings, and credential persistence in `auth/`.
+* **Flexible Authentication**: Log in via interactive QR code in terminal or request an 8-digit **Pairing Code** directly for headless servers.
+* **Dual API Command Dispatcher**: Native support for both modern Baileys `execute(sock, m, args, extra)` and classic GoatBot `onStart({ api, message, event, args, usersData, threadsData, globalData, prefix })`.
+
+### 2. ⚡ Zero-Disk Streaming & Pipeline Processing
+* **Automated FFmpeg Transcoding**: Integrated `@ffmpeg-installer/ffmpeg` and `node-webpmux` for zero-system-dependency animated WebP sticker conversion and EXIF metadata injection.
+* **Pure JavaScript Image Manipulation**: Powered by `jimp@^1.6.1` for blur, crop, resize, and watermark filters without native C++ compilation requirements.
+* **Universal Media Downloader**: Integrated `btch-downloader` and `savetube` APIs for high-definition streaming from YouTube, TikTok, Facebook, and Instagram.
+
+### 3. 💬 Group and Private DM Engine
+* **Universal Command Execution**: Commands run with zero friction in **both Group chats and 1-on-1 Direct Messages (DMs)**.
+* **Intelligent Moderation Safeguard**: Purely administrative actions (`kick`, `promote`, `demote`, `mute`, `tagall`) verify group context gracefully without crashes.
+* **No-Prefix Command Recognition**: When users send commands (like `help`, `ping`, `sticker`, `daily`) in DMs or groups, the router auto-matches without requiring manual prefix typing.
+* **Automatic Chatbot Fallback**: In private chats, conversational queries automatically invoke the multi-LLM AI companion.
+
+---
+
 
 ## 📦 Command Matrix & Ecosystem
 
