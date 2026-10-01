@@ -386,13 +386,13 @@ module.exports = {
 You can use the WCA client anywhere in your code:
 
 ```javascript
-const wca = require("@sheikhtamim/wca");
+const wca = require("floppa-wca"); // or require("./floppa-wca")
 
 // Or use the globally attached API instance:
 // global.api or global.wcaApi
 
 // Send text
-await global.api.sendMessage("Hello world", "8801712345678@s.whatsapp.net");
+await global.api.sendMessage("Hello world", "1234567890@s.whatsapp.net");
 
 // Send image with caption
 await global.api.sendImage("https://example.com/pic.png", "ThreadID", "Check this out!");

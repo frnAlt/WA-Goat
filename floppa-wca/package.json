@@ -1,5 +1,5 @@
 {
-  "name": "@sheikhtamim/wca",
+  "name": "floppa-wca",
   "version": "1.1.1",
   "description": "FCA-style WhatsApp Client API built on Baileys — send messages, media, manage groups, and listen to all WhatsApp events with a familiar callback interface.",
   "type": "commonjs",
@@ -24,6 +24,7 @@
     "whatsapp",
     "whatsapp-bot",
     "baileys",
+    "floppa-wca",
     "wca",
     "whatsapp-api",
     "whatsapp-client",

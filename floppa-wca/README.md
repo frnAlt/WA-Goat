@@ -1,24 +1,24 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=28&pause=1000&color=25D366&center=true&vcentered=true&width=600&lines=WCA+%E2%80%94+WhatsApp+Client+API;FCA-style+WhatsApp+Bot+Framework;by+frnAlt" alt="WCA" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=28&pause=1000&color=25D366&center=true&vcentered=true&width=600&lines=Floppa-WCA+%E2%80%94+WhatsApp+Client+API;FCA-style+WhatsApp+Bot+Framework;by+frnAlt" alt="Floppa-WCA" />
 
 <br/>
 
-[![npm version](https://img.shields.io/npm/v/@sheikhtamim/wca?color=25D366&label=version&logo=npm&style=for-the-badge)](https://www.npmjs.com/package/@sheikhtamim/wca)
-[![npm downloads](https://img.shields.io/npm/dm/@sheikhtamim/wca?color=blue&logo=npm&style=for-the-badge)](https://www.npmjs.com/package/@sheikhtamim/wca)
-[![Node.js](https://img.shields.io/node/v/@sheikhtamim/wca?color=brightgreen&logo=node.js&style=for-the-badge)](https://nodejs.org)
+[![Module](https://img.shields.io/badge/module-floppa--wca-25D366?style=for-the-badge&logo=whatsapp)](https://github.com/frnAlt/WA-Goat)
+[![Package Type](https://img.shields.io/badge/package-local%20module-blue?style=for-the-badge)](https://github.com/frnAlt/WA-Goat)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18.x-brightgreen?logo=node.js&style=for-the-badge)](https://nodejs.org)
 [![GitHub stars](https://img.shields.io/github/stars/frnAlt/WA-Goat?color=yellow&logo=github&style=for-the-badge)](https://github.com/frnAlt/WA-Goat/stargazers)
 [![License](https://img.shields.io/github/license/frnAlt/WA-Goat?color=red&style=for-the-badge)](LICENSE)
 [![Visitors](https://visitor-badge.laobi.icu/badge?page_id=frnAlt.wa-goat&style=for-the-badge&color=0d1117)](https://github.com/frnAlt/WA-Goat)
 
 <br/>
 
-> **WCA** is an FCA-style WhatsApp bot framework built on top of [Baileys](https://github.com/WhiskeySockets/Baileys).  
-> If you know how to write a Facebook Messenger bot using `stfca`, you already know WCA.
+> **Floppa-WCA** is an FCA-style WhatsApp bot framework built on top of [Baileys](https://github.com/WhiskeySockets/Baileys).  
+> If you know how to write a Facebook Messenger bot using `fca`, you already know Floppa-WCA.
 
 <br/>
 
-[📦 NPM](https://www.npmjs.com/package/@sheikhtamim/wca) • [🤖 Example Bot](https://github.com/frnAlt/WA-Goat) • [🐛 Issues](https://github.com/frnAlt/WA-Goat/issues) • [💬 Support Group](https://chat.whatsapp.com/I46aewAKhY8IrfmgMjODPj?mode=gi_t) • [📸 Instagram](https://github.com/frnAlt)
+[📁 Repository](https://github.com/frnAlt/WA-Goat) • [🤖 Bot Core](https://github.com/frnAlt/WA-Goat) • [🐛 Issues](https://github.com/frnAlt/WA-Goat/issues) • [💬 Support Group](https://chat.whatsapp.com/I46aewAKhY8IrfmgMjODPj?mode=gi_t) • [👤 Author: frnAlt](https://github.com/frnAlt)
 
 </div>
 
@@ -35,7 +35,7 @@
 | 👤 Profile | Get/Set profile picture · Status text · Display name · Block/Unblock · Get DM info |
 | 📡 Events | Messages · Reactions · Delete events · Group changes · Typing presence · Calls |
 | 💬 Chats | Get all chats · Get all contacts · Archive/Unarchive · Mute/Unmute |
-| 🔄 Updates | Auto-update on startup — always keeps itself current |
+| 🔄 Architecture | Modular local engine — zero external npm registry dependency |
 
 ---
 
@@ -53,10 +53,22 @@ npm -v
 
 ---
 
-## 📦 Installation
+## 📦 Installation & Integration
 
-```bash
-npm install @sheikhtamim/wca
+`floppa-wca` is integrated directly as a local module (non-npm uploaded package) inside the WA-Goat repository:
+
+```json
+{
+  "dependencies": {
+    "floppa-wca": "file:./floppa-wca"
+  }
+}
+```
+
+Or import directly via relative path:
+
+```js
+const wca = require('./floppa-wca');
 ```
 
 ---
@@ -66,7 +78,7 @@ npm install @sheikhtamim/wca
 ### QR Code login
 
 ```js
-const wca = require('@sheikhtamim/wca');
+const wca = require('floppa-wca'); // or require('./floppa-wca')
 
 wca({ authFolder: './wca_auth' }, (err, api) => {
     if (err) return console.error(err);
@@ -83,11 +95,11 @@ wca({ authFolder: './wca_auth' }, (err, api) => {
 ### Pairing Code login (no QR scan needed)
 
 ```js
-const wca = require('@sheikhtamim/wca');
+const wca = require('floppa-wca'); // or require('./floppa-wca')
 
 wca({
     authFolder:     './wca_auth',
-    phoneNumber:    '8801xxxxxxxxx',   // international format, no +
+    phoneNumber:    '1xxxxxxxxxx',   // international format, no +
     usePairingCode: true,
 }, (err, api) => {
     if (err) return console.error(err);
@@ -138,33 +150,21 @@ wca({
 
 ---
 
-## 🔄 Auto-Update (built-in)
+## 🔄 Module Management
 
-WCA **automatically checks for updates every time it starts** and installs the latest version before connecting. No manual setup needed — just run your bot normally.
+`floppa-wca` is managed directly as an integrated local module within the bot workspace, eliminating external npm registry dependencies:
 
 ```js
-// WCA auto-updates itself. No extra code required.
+// Floppa-WCA operates natively as a local workspace module
+const wca = require('floppa-wca'); // or require('./floppa-wca')
 wca({ authFolder: './wca_auth' }, (err, api) => { ... });
 ```
 
-To disable auto-update (not recommended):
+To verify module status programmatically:
 
 ```js
-wca({ skipUpdateCheck: true, authFolder: './wca_auth' }, (err, api) => { ... });
-```
-
-You can also call it manually:
-
-```js
-const { checkForWCAUpdate } = require('@sheikhtamim/wca/checkUpdate');
+const { checkForWCAUpdate } = require('floppa-wca/checkUpdate');
 await checkForWCAUpdate();
-
-// Options:
-await checkForWCAUpdate({
-    autoUpdate:   true,    // install the update   (default: true)
-    silent:       false,   // suppress console log (default: false)
-    exitOnUpdate: true,    // exit(2) so pm2/nodemon restarts (default: true)
-});
 ```
 
 ---
@@ -348,12 +348,12 @@ const info = await api.getDMInfo('628xxx@s.whatsapp.net');
 ## 🤖 Full Bot Example
 
 ```js
-const wca = require('@sheikhtamim/wca');
+const wca = require('floppa-wca'); // or require('./floppa-wca')
 
-// WCA auto-updates itself before connecting — no extra code needed.
+// Floppa-WCA operates natively as a local workspace module
 wca({
     authFolder:     './wca_auth',
-    phoneNumber:    '8801xxxxxxxxx',
+    phoneNumber:    '1xxxxxxxxxx',
     usePairingCode: true,
     globalOptions:  {
         listenEvents:  true,
@@ -426,10 +426,10 @@ wca({
 ## 📂 Project Structure
 
 ```
-wca/
- ├── index.js              ← Main entry  wca(options, callback)
+floppa-wca/
+ ├── index.js              ← Main entry: wca(options, callback)
  ├── utils.js              ← JID helpers, LID resolver, event formatter
- ├── checkUpdate.js        ← Auto-update checker (runs on every startup)
+ ├── checkUpdate.js        ← Module version info checker
  └── src/                  ← One file per feature
      ├── listenMqtt.js
      ├── sendMessage.js
@@ -490,12 +490,11 @@ WhatsApp internally uses **LID** (Linked Identity) JIDs — e.g. `18639312497062
 
 | | |
 |---|---|
-| 📦 NPM package | [`@sheikhtamim/wca`](https://www.npmjs.com/package/@sheikhtamim/wca) |
-| 🧩 WCA source | [github.com/frnAlt/WA-Goat](https://github.com/frnAlt/WA-Goat) |
-| 🤖 Example bot | [github.com/frnAlt/ST_WhatsappBot](https://github.com/frnAlt/WA-Goat) |
+| 📦 Module | `floppa-wca` (Integrated Local Package) |
+| 🧩 WCA Source | [github.com/frnAlt/WA-Goat](https://github.com/frnAlt/WA-Goat) |
+| 🤖 Bot Repository | [github.com/frnAlt/WA-Goat](https://github.com/frnAlt/WA-Goat) |
 | 💬 Support Group | [Join WCA Support GC](https://chat.whatsapp.com/I46aewAKhY8IrfmgMjODPj?mode=gi_t) |
-| 📸 Instagram | [github.com/frnAlt](https://github.com/frnAlt) |
-| 📞 Contact | [wa.me/8801600203673](https://wa.me/8801600203673) |
+| 👤 Author | [github.com/frnAlt](https://github.com/frnAlt) |
 
 ---
 

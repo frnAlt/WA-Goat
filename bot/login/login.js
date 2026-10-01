@@ -112,7 +112,7 @@ async function checkRestartFile(api) {
 async function connect() {
   const cfg        = global.ST.config;
   const authFolder = path.resolve(process.cwd(), cfg.authFolder || "./auth");
-  const wca        = require("@sheikhtamim/wca");
+  const wca        = require("floppa-wca");
   const c          = global.utils.colors;
 
   let phoneNumber = (cfg.phoneNumber || "").trim();

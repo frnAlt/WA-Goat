@@ -16,9 +16,9 @@ describe('WCA (WhatsApp Chat API) Integration', () => {
     assert.equal(typeof wca.utils, 'object', 'wca.utils must be exported');
   });
 
-  test('should resolve @sheikhtamim/wca module correctly', () => {
-    const aliasedWca = require('@sheikhtamim/wca');
-    assert.equal(typeof aliasedWca, 'function', '@sheikhtamim/wca must resolve to a function');
+  test('should resolve floppa-wca module correctly', () => {
+    const floppaWca = require('floppa-wca');
+    assert.equal(typeof floppaWca, 'function', 'floppa-wca must resolve to a function');
   });
 
   test('should correctly identify and format JIDs in wca/utils', () => {

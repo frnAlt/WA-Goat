@@ -22,11 +22,11 @@ The **WCA** library ([floppa-wca](floppa-wca/README.md)) is an FCA-style WhatsAp
 
 ### Method A: Standalone WCA Engine
 ```javascript
-const wca = require("@sheikhtamim/wca");
+const wca = require("floppa-wca"); // or require("./floppa-wca")
 
 wca({
   authFolder: "./auth",
-  phoneNumber: "8801712345678",
+  phoneNumber: "12345678901",
   usePairingCode: true,
   globalOptions: {
     selfListen: false,
@@ -48,7 +48,7 @@ wca({
 
 ### Method B: Attach WCA to Existing Baileys Socket
 ```javascript
-const { buildAPI } = require("./wca");
+const { buildAPI } = require("./floppa-wca");
 
 const api = buildAPI(sock, {
   selfID: sock.user?.id,

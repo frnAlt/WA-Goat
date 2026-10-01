@@ -1,18 +1,14 @@
 "use strict";
 
 /**
- * WCA Auto-Update checker
+ * Floppa-WCA Module Status & Update Checker
  *
- * Checks npm registry for a newer version of @sheikhtamim/wca
- * and auto-installs it if found.
+ * Floppa-WCA is integrated as a local repository package (non-npm uploaded).
  *
  * Usage (add to your bot's startup):
  *
- *   const { checkForWCAUpdate } = require('@sheikhtamim/wca/checkUpdate');
- *   await checkForWCAUpdate();       // check + auto-update
- *
- * Or with options:
- *   await checkForWCAUpdate({ autoUpdate: false });  // just check, don't update
+ *   const { checkForWCAUpdate } = require('floppa-wca/checkUpdate');
+ *   await checkForWCAUpdate();
  */
 
 const https  = require("https");
@@ -20,8 +16,7 @@ const { execSync } = require("child_process");
 const fs     = require("fs");
 const path   = require("path");
 
-const PKG_NAME    = "@sheikhtamim/wca";
-const REGISTRY    = "https://registry.npmjs.org/" + PKG_NAME + "/latest";
+const PKG_NAME    = "floppa-wca";
 const BOT_REPO    = "https://github.com/frnAlt/WA-Goat.git";
 const WCA_REPO    = "https://github.com/frnAlt/WA-Goat.git";
 const CHANGELOG   = "https://raw.githubusercontent.com/frnAlt/WA-Goat/main/CHANGELOG.md";
@@ -139,60 +134,12 @@ function patchUserPackageJson(version) {
  */
 async function checkForWCAUpdate(opts) {
     opts = Object.assign({ autoUpdate: true, silent: false, exitOnUpdate: true }, opts || {});
-
-    if (!opts.silent) log(C.cyan, "\n  🔍  Checking for WCA updates (" + PKG_NAME + ")…");
-
-    let latestVersion;
-    try {
-        const body = await fetchURL(REGISTRY);
-        const data = JSON.parse(body);
-        latestVersion = data.version;
-    } catch (e) {
-        if (!opts.silent) log(C.red, "  ❌  Could not reach npm registry: " + e.message);
-        return false;
-    }
-
     const currentVersion = getCurrentVersion();
 
-    if (compareVersions(latestVersion, currentVersion) <= 0) {
-        if (!opts.silent)
-            log(C.bGreen, "  ✅  WCA is up to date (v" + currentVersion + ")");
-        return false;
+    if (!opts.silent) {
+        log(C.bGreen, "  ✅  Floppa-WCA is running as an integrated local module (v" + currentVersion + ")");
     }
-
-    log(C.bYellow, "  ✨  New WCA version available: v" + latestVersion + "  (current: v" + currentVersion + ")");
-
-    // Print changelog if available
-    try {
-        const changelog = await fetchURL(CHANGELOG);
-        const recent = changelog.split("##")[1];
-        if (recent) {
-            log(C.dim, "\n  📋  Recent changes:");
-            recent.split("\n").slice(0, 6).forEach((l) => log(C.dim, "      " + l));
-            process.stdout.write("\n");
-        }
-    } catch (_) {}
-
-    log(C.cyan, "  🔗  WCA repo       : " + WCA_REPO);
-    log(C.cyan, "  🤖  Example bot    : " + BOT_REPO);
-
-    if (!opts.autoUpdate) return false;
-
-    log(C.yellow, "  📦  Updating " + PKG_NAME + " → v" + latestVersion + "…");
-    try {
-        installVersion(latestVersion);
-        patchUserPackageJson(latestVersion);
-        log(C.bGreen, "  ✅  WCA updated successfully to v" + latestVersion + "!");
-
-        if (opts.exitOnUpdate) {
-            log(C.yellow, "  🔄  Restarting to apply update…\n");
-            setTimeout(() => process.exit(2), 1000);
-        }
-        return true;
-    } catch (e) {
-        log(C.red, "  ❌  Update failed: " + e.message);
-        return false;
-    }
+    return false;
 }
 
 module.exports = { checkForWCAUpdate, getCurrentVersion, compareVersions };

@@ -3,7 +3,7 @@
 module.exports = {
   config: {
     name: "stai",
-    aliases: ["tamimai", "aiagent", "stagent"],
+    aliases: ["frnai", "aiagent", "stagent"],
     version: "2.1.0",
     author: "frnAlt",
     countDown: 3,
