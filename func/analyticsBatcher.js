@@ -130,8 +130,9 @@ class AnalyticsBatcher {
          */
         _startFlushTimer() {
                 this.flushTimer = setInterval(() => {
-                        this.flush().unref();
+                        this.flush().catch(() => {});
                 }, this.options.flushInterval);
+                if (this.flushTimer && this.flushTimer.unref) this.flushTimer.unref();
         }
 
         /**

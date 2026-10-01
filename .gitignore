@@ -36,6 +36,7 @@ data/backups/
 database/data/*.json
 database/data/*.sqlite
 database/data/*.db
+*.bak
 
 # System / OS
 .DS_Store

@@ -19,11 +19,23 @@ test('Command Manager and Loader', async (t) => {
     const speed = commandManager.get('speed');
     assert.ok(speed, 'speed alias found');
     assert.strictEqual(speed.name, 'ping');
+
+    const pfp = commandManager.get('pfp');
+    assert.ok(pfp, 'pfp command found');
+    assert.strictEqual(pfp.name, 'pfp');
+
+    const dp = commandManager.get('dp');
+    assert.ok(dp, 'dp alias found');
+    assert.strictEqual(dp.name, 'pfp');
+
+    const canvas = commandManager.get('canvas');
+    assert.ok(canvas, 'canvas command found');
+    assert.strictEqual(canvas.name, 'canvas');
   });
 
   await t.test('should correctly index categories', () => {
     const categories = commandManager.getCategories();
     assert.ok(categories.size > 0);
-    assert.ok(categories.has('admin') || categories.has('utility'));
+    assert.ok(categories.has('admin') || categories.has('utility') || categories.has('media'));
   });
 });

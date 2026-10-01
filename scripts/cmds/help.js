@@ -4,8 +4,8 @@
  * Matches https://github.com/lazyneoaz/Goatbot-V2/blob/main/scripts/cmds/help.js
  */
 
-const commandManager = require('../../core/command');
-const config = require('../../config');
+const commandManager = require('../../src/core/command');
+const config = require('../../src/config');
 
 module.exports = {
   config: {

@@ -5,8 +5,7 @@
  */
 
 const axios = require('axios');
-const path = require('path');
-const { decodeJid } = require(path.resolve(process.cwd(), 'src/utils/myfunc'));
+const { decodeJid } = require('../../utils/myfunc');
 
 module.exports = {
   config: {
