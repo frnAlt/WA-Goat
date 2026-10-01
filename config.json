@@ -1,0 +1,57 @@
+{
+  "botName": "Goat Bot V2 🐐",
+  "nickNameBot": "Goat Bot V2 🐐",
+  "version": "2.0.0",
+  "author": "frnAlt (Farhan Muh Tasim) & Goat Bot Contributors",
+  "description": "Goat Bot V2 WhatsApp Edition powered by Baileys v7.0.0-rc14",
+  "prefix": "!",
+  "language": "en",
+  "timeZone": "Asia/Dhaka",
+  "ownerName": "Farhan",
+  "ownerNumber": "1234567890",
+  "adminBot": [
+    "1234567890"
+  ],
+  "devUsers": [
+    "1234567890"
+  ],
+  "premiumUsers": [
+    "1234567890"
+  ],
+  "noPrefix": true,
+  "antiInbox": false,
+  "botOff": false,
+  "eventsOff": false,
+  "reactOff": false,
+  "autoTyping": false,
+  "autoRead": false,
+  "autoStatus": false,
+  "antiCall": true,
+  "sessionPath": "./auth",
+  "pairingCode": false,
+  "pairingNumber": "",
+  "database": {
+    "type": "json",
+    "storagePath": "./data",
+    "sqlitePath": "./data/database.sqlite"
+  },
+  "spamProtection": {
+    "commandThreshold": 8,
+    "timeWindow": 10,
+    "banDuration": 24
+  },
+  "defaultGroupSettings": {
+    "antilink": false,
+    "antibadword": false,
+    "welcome": true,
+    "goodbye": true,
+    "chatbot": false,
+    "mute": false,
+    "antitag": false,
+    "nsfw": false,
+    "warnLimit": 3,
+    "customWelcome": "",
+    "customGoodbye": "",
+    "setRole": {}
+  }
+}

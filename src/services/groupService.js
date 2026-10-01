@@ -16,6 +16,7 @@ class GroupService {
    */
   async getMetadata(sock, groupId) {
     if (!groupId || !groupId.endsWith('@g.us')) return null;
+    if (!sock || typeof sock.groupMetadata !== 'function') return null;
 
     const cached = this.metadataCache.get(groupId);
     if (cached && Date.now() - cached.timestamp < this.cacheTTL) {
@@ -30,7 +31,6 @@ class GroupService {
       if (err.message && (err.message.includes('forbidden') || err.message.includes('403'))) {
         this.metadataCache.set(groupId, { data: null, timestamp: Date.now() });
       }
-      logger.warn(`[GROUP] Failed to fetch metadata for ${groupId}:`, err.message);
       return cached ? cached.data : null;
     }
   }

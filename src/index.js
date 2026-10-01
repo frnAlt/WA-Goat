@@ -34,12 +34,22 @@ async function main() {
 
   // 2. Discover and Load Commands
   const commandsDir = path.resolve(__dirname, 'commands');
-  const loadedCmdCount = commandManager.loadFromDirectory(commandsDir);
-  logger.info(`Loaded ${loadedCmdCount} commands dynamically across ${commandManager.getCategories().size} categories.`);
+  commandManager.loadFromDirectory(commandsDir);
+
+  const scriptsCmdsDir = path.resolve(process.cwd(), 'scripts/cmds');
+  if (require('fs').existsSync(scriptsCmdsDir)) {
+    commandManager.loadFromDirectory(scriptsCmdsDir);
+  }
+  logger.info(`Loaded ${commandManager.getAll().length} unique commands dynamically across ${commandManager.getCategories().size} categories.`);
 
   // 3. Discover and Load Events
   const eventsDir = path.resolve(__dirname, 'events');
-  const loadedEventCount = eventManager.loadFromDirectory(eventsDir);
+  let loadedEventCount = eventManager.loadFromDirectory(eventsDir);
+
+  const scriptsEventsDir = path.resolve(process.cwd(), 'scripts/events');
+  if (require('fs').existsSync(scriptsEventsDir)) {
+    loadedEventCount += eventManager.loadFromDirectory(scriptsEventsDir);
+  }
   logger.info(`Loaded ${loadedEventCount} modular events.`);
 
   // 4. Initialize Background Scheduler & Cleaners

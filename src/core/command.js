@@ -12,6 +12,34 @@ class CommandManager {
     this.commands = new Map();
     this.aliases = new Map();
     this.categories = new Map();
+
+    const config = require('../config');
+    global.GoatBot = global.GoatBot || {
+      config,
+      commands: this.commands,
+      aliases: this.aliases,
+      onReply: new Map(),
+      onReaction: new Map()
+    };
+    if (!global.utils) {
+      Object.defineProperty(global, 'utils', {
+        get() {
+          if (!this._utilsInstance) {
+            try {
+              this._utilsInstance = require('../../utils.js');
+            } catch (_) {
+              this._utilsInstance = {};
+            }
+          }
+          return this._utilsInstance;
+        },
+        set(val) {
+          this._utilsInstance = val;
+        },
+        configurable: true,
+        enumerable: true
+      });
+    }
   }
 
   /**
@@ -60,7 +88,32 @@ class CommandManager {
         } else if (typeof command.onStart === 'function') {
           const { usersData, threadsData, globalData } = require('../database');
           const getLang = (key) => command.langs?.en?.[key] || key;
+
+          const apiShim = {
+            ...ctx.sock,
+            sendMessage: async (form, threadID, callback) => {
+              try {
+                const dest = threadID || ctx.chat;
+                const res = await ctx.message.send(form);
+                if (typeof callback === 'function') callback(null, res);
+                return res;
+              } catch (err) {
+                if (typeof callback === 'function') callback(err, null);
+                throw err;
+              }
+            },
+            sendTypingIndicator: async (status, threadID) => {
+              const dest = threadID || ctx.chat;
+              await ctx.sock.sendPresenceUpdate(status ? 'composing' : 'paused', dest).catch(() => {});
+            },
+            unsendMessage: async (messageID, threadID) => {
+              const dest = threadID || ctx.chat;
+              await ctx.sock.sendMessage(dest, { delete: { remoteJid: dest, id: messageID } }).catch(() => {});
+            }
+          };
+
           return await command.onStart({
+            api: apiShim,
             sock: ctx.sock,
             message: ctx.message,
             args: ctx.args,
@@ -70,7 +123,10 @@ class CommandManager {
             event: ctx,
             getLang,
             extra: ctx,
-            config: require('../config')
+            prefix: ctx.prefix || require('../config').prefix || '!',
+            commandName: ctx.commandName || name,
+            config: require('../config'),
+            role: ctx.isOwner ? 4 : ctx.isBotAdmin ? 2 : ctx.isAdmin ? 1 : 0
           });
         } else if (typeof command === 'function') {
           return await command(ctx.sock, ctx.chat, ctx.m, ctx.args);
@@ -105,7 +161,7 @@ class CommandManager {
     const items = fs.readdirSync(dirPath);
 
     for (const item of items) {
-      const fullPath = path.join(dirPath, item);
+      const fullPath = path.resolve(dirPath, item);
       const stat = fs.statSync(fullPath);
 
       if (stat.isDirectory()) {

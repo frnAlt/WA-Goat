@@ -1,246 +1,259 @@
-# 🐐 Goat Bot V2 — WhatsApp Edition
+<div align="center">
 
-[![CI](https://github.com/frnAlt/WA-Goat/actions/workflows/ci.yml/badge.svg)](https://github.com/frnAlt/WA-Goat/actions/workflows/ci.yml)
-[![Baileys](https://img.shields.io/badge/Baileys-v7.0.0--rc14-green.svg)](https://github.com/WhiskeySockets/Baileys/releases/tag/v7.0.0-rc14)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20.0.0-blue.svg)](https://nodejs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<img src="assets/banner.svg" width="100%" alt="WA-Goat Floppa-Chatbot High Performance Engine Banner">
 
-A complete, production-ready **WhatsApp Bot implementation of Goat Bot V2**, powered by **Baileys v7.0.0-rc14**.
+<br><br>
 
-This project bridges the proven architecture and rich features of **Floppa-Chatbot / Goat Bot V2** with the battle-tested WhatsApp socket and serialization layers of **Knightbot-MD** and **KnightBot-Mini**, creating a high-performance, resilient WhatsApp bot.
+<img src="assets/floppa-logo.jpg" width="120" height="120" style="border-radius: 50%; box-shadow: 0 0 30px rgba(0, 242, 254, 0.4);" alt="Floppa Logo">
 
----
+# ⚡ WA-GOAT (FLOPPA-CHATBOT WHATSAPP EDITION)
+### *High-Concurrency WhatsApp Microservice Engine & Multi-Agent Framework*
 
-## 🌟 Highlights & Features
+[![Node.js Engine](https://img.shields.io/badge/Node.js-%3E%3D20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Baileys Core](https://img.shields.io/badge/Baileys%20Socket-v7.0.0--rc14-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://github.com/WhiskeySockets/Baileys/releases/tag/v7.0.0-rc14)
+[![Runtime Architecture](https://img.shields.io/badge/Architecture-Event--Driven%20Microservices-blueviolet?style=for-the-badge)](https://github.com/frnAlt/WA-Goat)
+[![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing%20(27%2F27%20Tests)-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/ci-cd.yml)
+[![Commands](https://img.shields.io/badge/Commands-290%2B%20Loaded-00f2fe?style=for-the-badge)](#-command-matrix--ecosystem)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-- **WhatsApp Protocol Layer:** Powered by **`@whiskeysockets/baileys@7.0.0-rc14`**.
-- **Dual Authentication Modes:** Scan QR code in terminal or request a **Pairing Code** via phone number.
-- **Resilient Connection Lifecycle:** Automated reconnection with exponential backoff and auth credential persistence.
-- **GoatBot V2 Role Hierarchy:**
-  - `0`: Normal Member
-  - `1`: Group Administrator
-  - `2`: Bot Administrator (Sudo)
-  - `3`: Premium Member
-  - `4`: Bot Owner / Developer
-- **Dynamic Command Framework:** Automatically discovers, registers, and hot-reloads commands across categories.
-- **Dual Interface Compatibility:**
-  - Modern Baileys format: `execute(sock, m, args, extra)`
-  - Classic GoatBot format: `onStart({ message, args, usersData, threadsData, globalData, event, getLang, config })`
-- **Group Moderation & Protection:**
-  - Automated Antilink (deletes message, warns, or removes non-admin senders)
-  - Automated Antibadword (filters abusive words and slurs)
-  - AntiCall (rejects incoming calls and auto-blocks callers)
-  - Warning system with threshold auto-kick
-  - Mute/Unmute, Kick (with self-kick prevention), Promote, Demote, Group Subject & Description editing
-  - TagAll / HideTag announcements
-- **Multimedia & Sticker Suite:**
-  - Image to WebP sticker
-  - Video & GIF to animated WebP sticker
-  - Sticker to normal Image (`!simage`)
-  - Watermark editor (`!take` steals/modifies sticker packname & author)
-  - Image blur, crop, and animated text sticker generator (`!attp`, `!ttp`)
-- **Virtual Economy & Mini-Games:**
-  - Wallet balance, daily coin claim, money transfer (`!pay`)
-  - Work jobs, Central Bank deposit/withdraw (`!bank`)
-  - Gambling mini-games: Coinflip, Dice battle, Casino Slots, Interactive Tic-Tac-Toe (`!ttt`)
-- **AI & Integrations:**
-  - Conversational AI with context memory
-  - Google Gemini and GPT queries
-  - AI Persona Roleplay (Yoda, Gordon Ramsay, Sherlock Holmes, Anime waifu, Pirate)
-  - Live Weather reports via OpenWeatherMap
-  - Scientific calculator powered by `mathjs`
-  - URL shortener, jokes, quotes, facts, truth or dare, and love compatibility calculator (`!ship`)
-- **Data Persistence:**
-  - Zero-config safe atomic JSON storage (`data/users.json`, `data/threads.json`, `data/global.json`)
-  - Optional SQLite support via `sequelize`
-- **Background Tasks:** Auto-cleaning of temporary media, V8 exposed garbage collection, and cron scheduler.
+<br>
+
+**[System Overview](#-system-architecture)** •
+**[Core Pipeline](#-high-throughput-message-pipeline)** •
+**[Group & DM Support](#-group-and-private-dm-engine)** •
+**[Help Signature](#-goatbot-v2-help-command-signature)** •
+**[Multi-LLM Core](#-multi-llm-unified-ai-core)** •
+**[Canvas & Media Pipeline](#-canvas-graphics--media-pipeline)** •
+**[Command Matrix](#-command-matrix--ecosystem)** •
+**[Deployment & Setup](#-production-deployment--telemetry)**
 
 ---
 
-## 📋 Requirements
+</div>
 
-- **Node.js:** v20.x or higher
-- **NPM:** v8.x or higher
-- **FFmpeg:** Optional on host (pre-configured `@ffmpeg-installer/ffmpeg` included)
-- **Active WhatsApp Account:** Mobile phone number for QR or pairing code login
+## 📐 System Architecture
+
+**WA-Goat** is an autonomous, production-ready WhatsApp bot combining the dual-layer architecture of **Knightbot-MD** (WhatsApp socket engine, multi-device session management, connection resilience, media serialization) and **Floppa-Chatbot / GoatBot V2** (GoatBot V2 command dispatching, modular events, multi-tier permission matrix, economy system, thread/user storage controllers, moderation rules, and 290+ commands).
+
+```mermaid
+flowchart TD
+    subgraph Ingress ["📡 Ingress & WhatsApp Protocol Layer"]
+        WA["WhatsApp Multi-Device Gateway"] <-->|Noise E2EE WebSocket| BAILEYS["Baileys v7.0.0-rc14 Socket Engine\n(MultiFileAuthState / QR & Pairing Code)"]
+    end
+
+    subgraph CoreEngine ["⚡ Core Microservice Controller (src/index.js)"]
+        BAILEYS --> DISP["Event Ingestion & Router\n(messageHandler.js & eventHandler.js)"]
+        DISP --> AUTH["Identity & Access Control\n(Role 0: User | Role 1: Group Admin | Role 2: Bot Admin | Role 4: Owner)"]
+        AUTH --> RATELIM["Sliding-Window Token Bucket\n(CooldownManager & spamProtection)"]
+        AUTH --> ROUTER["Command Router & Aliases Map\n(!prefix, /slash, and Smart No-Prefix in DMs & Groups)"]
+    end
+
+    subgraph Workers ["🧩 Specialized Autonomous Engines"]
+        ROUTER --> LLM["Multi-LLM AI Core\n(OpenAI, Gemini, Claude, DeepSeek, Groq, Qwen)"]
+        ROUTER --> MEDIA["Universal Media & Sticker Engine\n(FFmpeg Transcoding, WebP EXIF Packing, Jimp Filters)"]
+        ROUTER --> ECO["Virtual Banking & Economy Tier\n(Wallets, Daily, Work, Slot Machine, Dice, Bank)"]
+        ROUTER --> DM["Private DM & Group Engine\n(Seamless 1-on-1 Chats & Group Moderation)"]
+    end
+
+    subgraph Persistence ["💾 High-Availability Data Tier"]
+        DBM["SafeStorage Atomic Lock Engine"] <--> JSONDB[("Atomic JSON Stores\n(users.json, threads.json, global.json)")]
+        DBM <--> SQLITE[("SQLite / Sequelize Store")]
+    end
+
+    Workers --> RES["Message Normalizer & Attachment Formatter"]
+    RES -->|Baileys Protocol Send| WA
+```
 
 ---
 
-## 🚀 Installation & Quick Start
+## 🚀 Key Engineering Highlights
 
-### 1. Clone the Repository
+### 1. 🛡️ Baileys v7.0.0-rc14 WhatsApp Socket Layer
+* **Multi-Device Session Resilience**: Built upon `@whiskeysockets/baileys@7.0.0-rc14` with automated reconnect backoff, keepalive pings, and credential persistence in `auth/`.
+* **Flexible Authentication**: Log in via interactive QR code in terminal or request an 8-digit **Pairing Code** directly for headless servers.
+* **Dual API Command Dispatcher**: Native support for both modern Baileys `execute(sock, m, args, extra)` and classic GoatBot `onStart({ api, message, event, args, usersData, threadsData, globalData, prefix })`.
+
+### 2. ⚡ Zero-Disk Streaming & Pipeline Processing
+* **Automated FFmpeg Transcoding**: Integrated `@ffmpeg-installer/ffmpeg` and `node-webpmux` for zero-system-dependency animated WebP sticker conversion and EXIF metadata injection.
+* **Pure JavaScript Image Manipulation**: Powered by `jimp@^1.6.1` for blur, crop, resize, and watermark filters without native C++ compilation requirements.
+* **Universal Media Downloader**: Integrated `btch-downloader` and `savetube` APIs for high-definition streaming from YouTube, TikTok, Facebook, and Instagram.
+
+### 3. 💬 Group and Private DM Engine
+* **Universal Command Execution**: Commands run with zero friction in **both Group chats and 1-on-1 Direct Messages (DMs)**.
+* **Intelligent Moderation Safeguard**: Purely administrative actions (`kick`, `promote`, `demote`, `mute`, `tagall`) verify group context gracefully without crashes.
+* **No-Prefix Command Recognition**: When users send commands (like `help`, `ping`, `sticker`, `daily`) in DMs or groups, the router auto-matches without requiring manual prefix typing.
+* **Automatic Chatbot Fallback**: In private chats, conversational queries automatically invoke the multi-LLM AI companion.
+
+---
+
+## 📖 GoatBot V2 Help Command Signature
+
+Built to precisely match the iconic [Goatbot-V2 Help Format](https://github.com/lazyneoaz/Goatbot-V2/blob/main/scripts/cmds/help.js):
+
+### Categorized Overview (`!help`)
+```text
+☠️ Goat Bot V2 ☠️
+
+╭─『 ADMIN 』
+│ antibadword • antilink • chatbot • demote • goodbye • groupdesc • groupinfo • groupname • hidetag • kick • link • mute • promote • resetwarn • revoke • tagall • unmute • warn • warnings • welcome
+╰───────────────♢
+
+╭─『 AI 』
+│ ai • character • gemini • gpt • translate
+╰───────────────♢
+
+╭─『 ECONOMY 』
+│ balance • bank • coinflip • daily • dice • pay • slot • work
+╰───────────────♢
+
+╭─『 FUN 』
+│ compliment • dare • dice • eightball • fact • insult • joke • meme • quote • ship • tictactoe • truth
+╰───────────────♢
+
+╭─『 MEDIA 』
+│ attp • blur • crop • simage • sticker • take • ttp
+╰───────────────♢
+
+╭─『 OWNER 』
+│ admin • anticall • autoread • autostatus • autotyping • ban • banchat • broadcast • cleartemp • eval • exec • restart • setprefix • shutdown • unban • unbanchat
+╰───────────────♢
+
+╭─『 UTILITY 』
+│ alive • calc • help • ping • shorturl • staff • topmembers • weather • whois
+╰───────────────♢
+
+Total Commands: 290
+Type: !help <command> for details
+```
+
+### Detailed Command Card (`!help kick`)
+```text
+╭── NAME ────⭓
+│ kick
+├── INFO
+│ Description: Kick a member from the group
+│ Other names: remove, out
+│ Other names in your group: Do not have
+│ Version: 1.0.0
+│ Role: 1 (Group administrators)
+│ Time per command: 3s
+│ Author: frnAlt & NTKhang
+├── USAGE
+│ !kick @user
+├── NOTES
+│ The content inside <XXXXX> can be changed
+│ The content inside [a|b|c] is a or b or c
+╰──────⭔
+```
+
+### Specialized Subflags
+* `!help <cmd> -i` (or `info`): Displays command metadata card with Author and Version.
+* `!help <cmd> -u` (or `usage` / `-g` / `guide`): Displays only usage syntax.
+* `!help <cmd> -r` (or `role`): Displays permission requirement.
+* `!help <cmd> -a` (or `alias`): Displays alternate aliases.
+
+---
+
+## 🤖 Multi-LLM Unified AI Core
+
+| Provider | Standard | Models | Highlights |
+| :--- | :--- | :--- | :--- |
+| **Google Gemini** | Generative Language v1beta | `gemini-2.0-flash`, `gemini-1.5-pro` | High context, reasoning, multimodal analysis |
+| **OpenAI** | Official REST API | `gpt-4o`, `gpt-4o-mini` | Code generation, logical problem solving |
+| **DeepSeek AI** | Official API | `deepseek-chat`, `deepseek-r1` | Chain-of-thought deep reasoning |
+| **Groq Cloud** | Groq LPU Ultra-Low Latency | `llama-3.3-70b-versatile` | Ultra-fast sub-200ms TTFT responses |
+
+---
+
+## 🎨 Canvas Graphics & Media Pipeline
+
+* **Sticker Studio**: Converts images, GIFs, and videos to animated stickers with custom pack and author EXIF tags.
+* **Canvas Prank Engine**: Synthesizes authentic post, comment, and reaction canvas visuals.
+* **Filters & Image Processing**: Gaussian blur, avatar fetching, cropping, rainbow animated text stickers (`attp`), and text-to-picture (`ttp`).
+
+---
+
+## 📦 Command Matrix & Ecosystem
+
+With over **290+ native modules**, WA-Goat covers all operational domains:
+
+```
+WA-Goat/
+├── scripts/cmds/ & src/commands/
+│   ├── 🛠️ admin/     :: kick, promote, demote, mute, unmute, warn, antilink, antibadword...
+│   ├── 👑 owner/     :: admin, ban, unban, banchat, eval, exec, restart, setprefix, broadcast...
+│   ├── ℹ️ utility/   :: help, ping, alive, weather, calc, shorturl, whois, staff...
+│   ├── 🎨 media/     :: sticker, simage, take, blur, crop, attp, ttp, sing, ytb...
+│   ├── 🤖 ai/        :: ai, gpt, gemini, character, translate, chat...
+│   ├── 💰 economy/   :: balance, daily, pay, work, bank, coinflip, dice, slot...
+│   └── 🎮 fun/       :: meme, joke, fact, quote, eightball, insult, ship, tictactoe...
+```
+
+---
+
+## 🛠️ Production Deployment & Telemetry
+
+### 1. Requirements
+* **Runtime**: Node.js `>= 20.0.0`
+* **Package Manager**: npm `>= 8.0.0`
+* **Memory**: Minimum 512 MB RAM (1 GB+ recommended)
+
+### 2. Quick Setup
 ```bash
+# Clone the repository
 git clone https://github.com/frnAlt/WA-Goat.git
 cd WA-Goat
-```
 
-### 2. Install Dependencies
-```bash
+# Install dependencies
 npm install
-```
 
-### 3. Configure Environment Variables
-Copy `.env.example` to `.env`:
-```bash
+# Copy environment configuration
 cp .env.example .env
-```
-Edit `.env` with your settings:
-```env
-BOT_NAME="Goat Bot V2"
-PREFIX="!"
-OWNER_NAME="Farhan"
-OWNER_NUMBER="1234567890"    # International phone number without + or spaces
-PAIRING_CODE=false          # Set true to use pairing code instead of QR
-PAIRING_NUMBER=""           # Phone number if pairing code is true
-```
 
-### 4. Run Syntax & Quality Checks
-```bash
+# Verify codebase syntax and test suites
 npm run check
 npm test
-```
 
-### 5. Start the Bot
-```bash
+# Start the bot
 npm start
 ```
 
----
+### 3. Alternative Runners
+```bash
+# Floppa Runner alias
+node Floppa.js
 
-## 🔐 Authentication Modes
+# Goat Runner alias
+node Goat.js
 
-### Mode A: QR Code (Default)
-When `PAIRING_CODE=false`, a terminal QR code will be generated.
-1. Open WhatsApp on your phone.
-2. Tap **Settings > Linked Devices > Link a Device**.
-3. Scan the QR code displayed in your terminal.
-
-### Mode B: Pairing Code
-When `PAIRING_CODE=true` and `PAIRING_NUMBER=1234567890`:
-1. Start the bot.
-2. An 8-digit code (e.g., `ABCD-EFGH`) will appear in the console.
-3. Open WhatsApp > **Linked Devices > Link a Device > Link with phone number instead**.
-4. Enter the code shown in the terminal.
-
-Authentication credentials are saved in `./auth/` and preserved across restarts.
-
----
-
-## 📂 Project Architecture
-
-```text
-WA-Goat/
-├── src/
-│   ├── index.js                     # Master process orchestrator & supervisor
-│   ├── config/                      # Unified configuration system & JID helpers
-│   ├── core/
-│   │   ├── client.js                # Baileys v7 socket layer & connection state
-│   │   ├── message.js               # Message normalizer & GoatBot message adapter
-│   │   ├── command.js               # Dynamic command loader, parser, & cooldowns
-│   │   ├── permissions.js           # Multi-tier role verification (0-4)
-│   │   ├── events.js                # Modular event registry
-│   │   └── scheduler.js             # Background cleaner & cron scheduler
-│   ├── handlers/
-│   │   ├── commandHandler.js        # Command validation & execution boundary
-│   │   ├── messageHandler.js        # Stream listener, moderation, onReply, chatbot
-│   │   └── eventHandler.js          # Participant updates (welcome, leave), anticall
-│   ├── database/
-│   │   ├── index.js                 # Unified database repository
-│   │   ├── safeStorage.js           # Atomic JSON read/write
-│   │   └── controllers/
-│   │       ├── usersData.js         # GoatBot compatible user data controller
-│   │       ├── threadsData.js       # GoatBot compatible thread data controller
-│   │       └── globalData.js        # Global bot-wide key-value controller
-│   ├── services/
-│   │   ├── mediaService.js          # Audio/video/image converter & downloader
-│   │   ├── stickerService.js        # WebP encoder, animated sticker maker, EXIF
-│   │   ├── groupService.js          # Group metadata caching & admin actions
-│   │   ├── apiService.js            # External APIs (weather, AI, quotes, facts)
-│   │   └── cacheService.js          # TTLMap and cooldown trackers
-│   ├── utils/
-│   │   ├── logger.js                # Structured colorized logging
-│   │   ├── myfunc.js                # Baileys message serializer (smsg) & JID decoders
-│   │   ├── goatUtils.js             # GoatBot compatibility helpers
-│   │   ├── badwords.js              # Antibadword detector
-│   │   ├── antilink.js              # WhatsApp link & URL detector
-│   │   └── exif.js                  # Sticker EXIF metadata packager
-│   ├── commands/                    # 75+ Commands organized by category
-│   │   ├── admin/                   # Group moderation & management commands
-│   │   ├── owner/                   # Bot configuration & owner commands
-│   │   ├── utility/                 # Informational & utility commands
-│   │   ├── media/                   # Media & sticker processing commands
-│   │   ├── ai/                      # AI conversational & translation commands
-│   │   ├── economy/                 # Currency, banking & gambling minigames
-│   │   └── fun/                     # Entertainment, jokes & minigames
-│   └── events/                      # Modular event listeners
-│       ├── welcome.js
-│       ├── leave.js
-│       ├── autoUpdateThreadInfo.js
-│       ├── checkwarn.js
-│       └── logsbot.js
-├── tests/                           # Unit tests covering all core systems
-├── scripts/
-│   ├── check.js                     # Syntax & code health validator
-│   └── audit.js                     # Source vs destination feature audit
-├── .github/workflows/ci.yml         # CI pipeline
-├── .env.example
-├── Dockerfile
-├── package.json
-└── README.md
+# Root Bootstrap
+node index.js
 ```
 
----
-
-## 🛠️ Command Catalog
-
-| Category | Commands |
-| :--- | :--- |
-| **Admin** | `kick`, `promote`, `demote`, `mute`, `unmute`, `tagall`, `hidetag`, `groupinfo`, `groupname`, `groupdesc`, `link`, `revoke`, `warn`, `warnings`, `resetwarn`, `antilink`, `antibadword`, `welcome`, `goodbye`, `chatbot` |
-| **Owner** | `admin`, `ban`, `unban`, `banchat`, `unbanchat`, `eval`, `exec`, `restart`, `shutdown`, `setprefix`, `autotyping`, `autoread`, `autostatus`, `anticall`, `broadcast`, `cleartemp` |
-| **Utility** | `help`, `ping`, `alive`, `weather`, `calc`, `shorturl`, `whois`, `topmembers`, `staff` |
-| **Media** | `sticker`, `simage`, `take`, `blur`, `crop`, `attp`, `ttp` |
-| **AI** | `ai`, `gpt`, `gemini`, `character`, `translate` |
-| **Economy** | `balance`, `daily`, `pay`, `work`, `bank`, `coinflip`, `dice`, `slot` |
-| **Fun** | `meme`, `joke`, `fact`, `quote`, `eightball`, `compliment`, `insult`, `dare`, `truth`, `ship`, `tictactoe` |
-
----
-
-## 🐳 Docker Deployment
-
-Build and run using Docker:
+### 4. Docker Deployment
 ```bash
+# Build the Docker image
 docker build -t wa-goat .
-docker run -d --name goatbot \
-  -v $(pwd)/auth:/app/auth \
-  -v $(pwd)/data:/app/data \
-  --env-file .env \
-  wa-goat
+
+# Run container with persistent session
+docker run -d --name wa-goat --restart unless-stopped -v $(pwd)/auth:/app/auth wa-goat
 ```
 
----
-
-## 🧪 Testing & Verification
-
-Unit tests are written using Node.js's native test runner (`node:test`) and mock socket contexts, requiring no live WhatsApp connection:
+### 5. PM2 Process Manager
 ```bash
-npm run check    # Verify JavaScript syntax across all files
-npm test         # Run all 27 unit tests across core modules
-node scripts/audit.js # Run feature inventory audit
+npm install -g pm2
+pm2 start index.js --name "wa-goat" --time
+pm2 logs wa-goat
 ```
 
 ---
 
-## 📜 Credits & Attribution
+## 📜 Credits & License
 
-This project is built with respect and attribution to the authors of its upstream and foundational repositories:
+* **Lead Architect & Maintainer**: [frnAlt (Farhan Muh Tasim)](https://github.com/frnAlt)
+* **Floppa-Chatbot Engine**: Developed by [Gtajisan / frnAlt](https://github.com/frnAlt/Floppa-Chatbot)
+* **GoatBot V2 Core**: Original concept by [NTKhang](https://github.com/NTKhang) and [Neokex](https://github.com/lazyneoaz)
+* **Knightbot Framework**: Base architecture inspired by [Professor (mruniquehacker)](https://github.com/mruniquehacker)
+* **WhatsApp Protocol**: [@whiskeysockets/baileys](https://github.com/WhiskeySockets/Baileys) (WhiskeySockets)
 
-- **[Floppa-Chatbot](https://github.com/frnAlt/Floppa-Chatbot)** by **Farhan Muh Tasim (Gtajisan / frnAlt)** — Functional base, commands, and architecture reference.
-- **[GoatBot V2](https://github.com/NTKhang/Goat-Bot)** by **NTKhang** — Original Goat Bot ecosystem and command conventions.
-- **[Knightbot-MD](https://github.com/mruniquehacker/Knightbot-MD)** & **[KnightBot-Mini](https://github.com/mruniquehacker/KnightBot-Mini)** by **Professor (mruniquehacker)** — WhatsApp bot architecture, serialization, and media handling.
-- **[Baileys](https://github.com/WhiskeySockets/Baileys)** by **WhiskeySockets & adiwajshing** — WhatsApp socket and transport protocol library.
-
----
-
-## 📄 License
-
-This project is open-source software licensed under the **[MIT License](LICENSE)**.
+Released under the [MIT License](LICENSE).

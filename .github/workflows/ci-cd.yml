@@ -1,0 +1,68 @@
+name: Goat-Bot-V2 CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      node_version:
+        description: 'Node.js version'
+        required: false
+        type: choice
+        options:
+          - '20'
+          - '22'
+          - '24'
+        default: '22'
+      run_syntax_checks:
+        description: 'Run syntax check on core engine, commands and events'
+        required: false
+        type: boolean
+        default: true
+      run_full_diagnostics:
+        description: 'Run test suite'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  test-and-validate:
+    name: Build, Syntax & Diagnostic Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version || '22' }}
+
+      - name: Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Core System Syntax Verification
+        if: ${{ inputs.run_syntax_checks != false }}
+        run: |
+          node --check index.js Floppa.js Goat.js utils.js
+          node --check src/index.js src/config/index.js
+          node --check src/core/client.js src/core/command.js src/core/events.js src/core/message.js src/core/permissions.js
+
+      - name: All Commands & Events Syntax Check
+        if: ${{ inputs.run_syntax_checks != false }}
+        run: npm run check
+
+      - name: Run Unit Test Suite
+        if: ${{ inputs.run_full_diagnostics != false }}
+        run: npm test
