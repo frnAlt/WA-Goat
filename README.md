@@ -1,12 +1,5 @@
-<div align="center">
 
-<img src="assets/banner.svg" width="100%" alt="WA-Goat Floppa-Chatbot High Performance Engine Banner">
-
-<br><br>
-
-<img src="assets/floppa-logo.jpg" width="120" height="120" style="border-radius: 50%; box-shadow: 0 0 30px rgba(0, 242, 254, 0.4);" alt="Floppa Logo">
-
-# ⚡ WA-GOAT (FLOPPA-CHATBOT WHATSAPP EDITION)
+#  WA-GOAT (FLOPPA-CHATBOT WHATSAPP EDITION)
 ### *High-Concurrency WhatsApp Microservice Engine & Multi-Agent Framework*
 
 [![Node.js Engine](https://img.shields.io/badge/Node.js-%3E%3D20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
