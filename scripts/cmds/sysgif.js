@@ -236,7 +236,7 @@ module.exports = {
         ctx.fillStyle = "#ffffff60";
         ctx.font = "14px 'Segoe UI', Arial";
         ctx.textAlign = "center";
-        ctx.fillText("Powered by ST | Sheikh Tamim", cx, height - 30);
+        ctx.fillText("Powered by frnAlt", cx, height - 30);
 
         encoder.addFrame(ctx);
       }

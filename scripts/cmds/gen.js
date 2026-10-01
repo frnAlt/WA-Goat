@@ -1,5 +1,5 @@
 /**
- * @author Neoaz 🐊 & frnAlt
+ * @author frnAlt
  * Multi-model AI Generation Engine (Nano Banana, GPT-Image, Flux, Seedream, Sunburst, Music)
  * Source: lazyneoaz/Goatbot-V2 (NKX GEN)
  */
@@ -187,7 +187,7 @@ module.exports = {
     name: "gen",
     aliases: ["nkxgen", "nkx"],
     version: "2.2",
-    author: "Neoaz 🐊 & frnAlt",
+    author: "frnAlt",
     countDown: 10,
     role: 0,
     description: {

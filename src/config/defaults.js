@@ -6,7 +6,7 @@ module.exports = {
   botName: 'Goat Bot V2',
   version: '2.0.0',
   description: 'Goat Bot V2 WhatsApp Edition powered by Baileys v7',
-  author: 'frnAlt (Farhan Muh Tasim) & Goat Bot Contributors',
+  author: 'frnAlt',
   prefix: '!',
   language: 'en',
   timeZone: 'Asia/Dhaka',
@@ -65,6 +65,44 @@ module.exports = {
   autoTyping: false,
   autoStatus: false,
   antiCall: false,
+
+  // Dashboard & Server
+  dashBoard: {
+    enable: true,
+    port: 5000,
+    expireVerifyCode: 300000,
+    passwordProtection: {
+      enable: false,
+      password: '',
+      notes: 'Enable password protection for dashboard access'
+    }
+  },
+  serverUptime: {
+    enable: true,
+    port: 3001,
+    socket: {
+      enable: true,
+      channelName: 'uptime',
+      verifyToken: 'goatbotkey'
+    }
+  },
+  express: {
+    enable: true,
+    port: 3000
+  },
+
+  // WCA (WhatsApp Chat API)
+  wca: {
+    selfListen: false,
+    listenEvents: true,
+    autoMarkDelivery: false,
+    autoReconnect: true,
+    enableTypingIndicator: false,
+    typingDuration: 3000
+  },
+  authFolder: './auth',
+  loginMode: 'pair',
+  phoneNumber: '',
 
   // External APIs
   apiKeys: {

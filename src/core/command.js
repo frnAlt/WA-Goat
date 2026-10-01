@@ -90,6 +90,7 @@ class CommandManager {
           const getLang = (key) => command.langs?.en?.[key] || key;
 
           const apiShim = {
+            ...(global.wcaApi || global.api || {}),
             ...ctx.sock,
             sendMessage: async (form, threadID, callback) => {
               try {

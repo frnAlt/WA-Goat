@@ -25,7 +25,7 @@ module.exports = {
     const getExp = 121;
     
     if (event.senderID !== author) {
-      return api.sendMessage("𝐓𝐡𝐢𝐬 𝐢𝐬 𝐧𝐨𝐭 𝐲𝐨𝐮𝐫 𝐪𝐮𝐢𝐳 𝐛𝐚𝐛𝐲 >🐸", event.threadID, event.messageID);
+      return api.sendMessage("❌ This is not your quiz.", event.threadID, event.messageID);
     }
     
     const reply = event.body.trim().toLowerCase();
@@ -42,7 +42,7 @@ module.exports = {
         });
         
         return api.sendMessage(
-          `✅ | Correct answer baby.\nYou have earned ${getCoin} coins and ${getExp} exp.`,
+          `✅ Correct answer! You earned ${getCoin} coins and ${getExp} exp.`,
           event.threadID,
           event.messageID
         );
@@ -51,7 +51,7 @@ module.exports = {
       }
     } else {
       return api.sendMessage(
-        `❌ | Wrong Answer baby.\nCorrect answer was: ${footballNames.join(" / ")}`,
+        `❌ Wrong answer. Correct answer was: ${footballNames.join(" / ")}`,
         event.threadID,
         event.messageID
       );

@@ -3,29 +3,49 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# Environment and sensitive files
+# Environment and sensitive files (API Keys, Tokens & Secrets)
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
+api-keys.json
+credentials.json
+secrets.json
+.secrets
 
-# Authentication & Sessions
+# Authentication & Sessions (WhatsApp & WCA Auth)
 auth/
+wca_auth/
 session/
 sessions/
 *.session
+account.txt
+account.txt2
+accounts.json
+appstate.json
+cookies.json
+*.pem
+*.key
+*.cert
 
 # Temporary and cache
 temp/
 tmp/
 .cache/
+cache/
 data/cache/
+downloads/
+restart.txt
+cache/restart.txt
 
 # Logs
 logs/
 *.log
 
-# Databases & local data
+# Databases & local persistent data
 data/*.json
 data/database.sqlite
 data/sqlite.db
@@ -36,7 +56,14 @@ data/backups/
 database/data/*.json
 database/data/*.sqlite
 database/data/*.db
+database/json/*.json
 *.bak
+
+# Build and deployment artifacts
+.vercel/
+dist/
+build/
+coverage/
 
 # System / OS
 .DS_Store

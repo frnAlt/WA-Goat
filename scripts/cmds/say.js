@@ -492,7 +492,7 @@ module.exports = {
     name: "say",
     aliases: ["tts", "speak", "voice", "vocal"],
     version: "2.1.0",
-    author: "frnAlt & Neoaz 🐊",
+    author: "frnAlt",
     countDown: 3,
     role: 0,
     category: "tts",

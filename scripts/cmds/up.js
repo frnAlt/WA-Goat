@@ -10,7 +10,7 @@ process.stdout.clearLine = process.stdout.clearLine || function () {};
 module.exports = {
   config: {
     name: "up",
-    aliases: ["runtime", "floppauptime"],
+    aliases: ["runtime"],
     version: "1.10",
     author: "frnAlt",
     countDown: 5,

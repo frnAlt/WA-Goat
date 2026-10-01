@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title><%= it.config.nickNameBot || "ST Bot" %> — Login</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/css/dashboard.css">
+        <link rel="icon" type="image/png" href="/images/st.png">
+</head>
+<body>
+        <div class="login-shell">
+                <form class="login-card" id="lf" onsubmit="return doLogin(event)">
+                        <div class="lg-logo">ST</div>
+                        <h1><%= it.config.nickNameBot || "ST Bot" %></h1>
+                        <p>Sign in to access the control panel.</p>
+                        <label class="field">
+                                <span class="name">Password</span>
+                                <input type="password" class="input" id="pw" autocomplete="current-password" required autofocus>
+                        </label>
+                        <button class="btn btn-primary" type="submit" style="width:100%">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                Continue
+                        </button>
+                        <div class="login-error" id="err"></div>
+                </form>
+        </div>
+        <script>
+                async function doLogin(e) {
+                        e.preventDefault();
+                        const pw = document.getElementById('pw').value;
+                        const err = document.getElementById('err');
+                        err.classList.remove('show');
+                        try {
+                                const r = await fetch('/login', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ password: pw })
+                                });
+                                const j = await r.json();
+                                if (j.success) location.href = '/dashboard';
+                                else { err.textContent = j.message || 'Invalid password'; err.classList.add('show'); }
+                        } catch (ex) {
+                                err.textContent = ex.message; err.classList.add('show');
+                        }
+                        return false;
+                }
+        </script>
+</body>
+</html>

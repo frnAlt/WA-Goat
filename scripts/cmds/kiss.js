@@ -190,7 +190,7 @@ module.exports = {
     name: "kiss",
     aliases: ["بوسة"],
     version: "1.0.0",
-    author: "Hina",
+    author: "frnAlt",
     role: 0,
     category: "fun",
     description: "😘 Send kiss interaction video with the person you reply to",

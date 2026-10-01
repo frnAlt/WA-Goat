@@ -6,7 +6,7 @@ const path = require("path");
 module.exports = {
   config: {
     name: "casinoslot",
-    aliases: ["cslot"],
+    aliases: ["cslot", "casino2"],
     version: "2.4.78",
     author: "frnAlt",
     description: "Professional 3-reel casino slot machine - Everything in GIF",
@@ -412,7 +412,7 @@ module.exports = {
         ctx.fillStyle = "#ffffff70";
         ctx.font = "20px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("🎰 Powered by ST | Sheikh Tamim 🎰", width/2, height - 20);
+        ctx.fillText("🎰 Powered by frnAlt 🎰", width/2, height - 20);
         
         encoder.addFrame(ctx);
       }

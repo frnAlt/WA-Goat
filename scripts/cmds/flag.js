@@ -26,7 +26,7 @@ module.exports = {
     const userData = await usersData.get(event.senderID);
     
     if (event.senderID !== author) {
-      return api.sendMessage("𝐓𝐡𝐢𝐬 𝐢𝐬 𝐧𝐨𝐭 𝐲𝐨𝐮𝐫 𝐟𝐥𝐚𝐠 𝐛𝐚𝐛𝐲 >🐸", event.threadID, event.messageID);
+      return api.sendMessage("❌ This is not your quiz.", event.threadID, event.messageID);
     }
     
     const reply = event.body.toLowerCase();
@@ -38,13 +38,13 @@ module.exports = {
       await usersData.set(event.senderID, userData);
       
       api.sendMessage(
-        `🎉 | Correct answe baby.\nYou have earned ${getCoin} coins and ${getExp} exp.`,
+        `✅ Correct answer! You earned ${getCoin} coins and ${getExp} exp.`,
         event.threadID,
         event.messageID
       );
     } else {
       api.sendMessage(
-        `🥺 | Wrong Answer baby\nCorrect answer was: ${flag}`,
+        `❌ Wrong answer. Correct answer was: ${flag}`,
         event.threadID,
         event.messageID
       );

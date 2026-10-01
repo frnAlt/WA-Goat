@@ -1,0 +1,46 @@
+{
+  "name": "@sheikhtamim/wca",
+  "version": "1.1.1",
+  "description": "FCA-style WhatsApp Client API built on Baileys — send messages, media, manage groups, and listen to all WhatsApp events with a familiar callback interface.",
+  "type": "commonjs",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./checkUpdate": "./checkUpdate.js",
+    "./utils": "./utils.js"
+  },
+  "files": [
+    "index.js",
+    "utils.js",
+    "checkUpdate.js",
+    "src/",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node -e \"const wca=require('.');console.log('WCA OK');\""
+  },
+  "keywords": [
+    "whatsapp",
+    "whatsapp-bot",
+    "baileys",
+    "wca",
+    "whatsapp-api",
+    "whatsapp-client",
+    "fca",
+    "messenger-bot",
+    "whatsapp-web"
+  ],
+  "author": "frnAlt",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@whiskeysockets/baileys": ">=6.0.0"
+  },
+  "dependencies": {
+    "pino": "^8.0.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}

@@ -1,5 +1,5 @@
 /**
- * @author frnAlt & Gtajisan
+ * @author frnAlt
  * Floppa Strong Response & Auto-Reply Database Command (scripts/cmds/response.js)
  * 
  * Allows users and admins to manage taught responses, fuzzy auto-replies, and view response database metrics.
@@ -14,7 +14,7 @@ module.exports = {
     name: "response",
     aliases: ["teach", "autoreply", "rep"],
     version: "2.0.0",
-    author: "frnAlt & Gtajisan",
+    author: "frnAlt",
     countDown: 2,
     role: 0,
     shortDescription: {

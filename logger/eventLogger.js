@@ -1,5 +1,5 @@
 /**
- * @author Gtajisan (Farhan Muh Tasim) & Antigravity
+ * @author frnAlt
  * ! Floppa-Chatbot Advanced Event & Message Logging Engine
  * Provides clean, high-visibility, colorized console output with:
  * - Group Name + Thread ID (or Direct Message indication)

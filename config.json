@@ -2,8 +2,8 @@
   "botName": "Goat Bot V2 🐐",
   "nickNameBot": "Goat Bot V2 🐐",
   "version": "2.0.0",
-  "author": "frnAlt (Farhan Muh Tasim) & Goat Bot Contributors",
-  "description": "Goat Bot V2 WhatsApp Edition powered by Baileys v7.0.0-rc14",
+  "author": "frnAlt",
+  "description": "Goat Bot V2 WhatsApp Edition powered by Baileys v7.0.0-rc14 & WCA",
   "prefix": "!",
   "language": "en",
   "timeZone": "Asia/Dhaka",
@@ -28,8 +28,49 @@
   "autoStatus": false,
   "antiCall": true,
   "sessionPath": "./auth",
+  "authFolder": "./auth",
+  "loginMode": "pair",
+  "phoneNumber": "",
   "pairingCode": false,
   "pairingNumber": "",
+  "dashBoard": {
+    "enable": true,
+    "port": 5000,
+    "expireVerifyCode": 300000,
+    "passwordProtection": {
+      "enable": false,
+      "password": "",
+      "notes": "Enable password protection for dashboard access"
+    }
+  },
+  "serverUptime": {
+    "enable": true,
+    "port": 3001,
+    "socket": {
+      "enable": true,
+      "channelName": "uptime",
+      "verifyToken": "goatbotkey"
+    }
+  },
+  "express": {
+    "enable": true,
+    "port": 3000
+  },
+  "listen": {
+    "selfListen": false,
+    "listenEvents": true,
+    "autoMarkDelivery": false,
+    "autoReconnect": true,
+    "listenRawMsg": true
+  },
+  "wca": {
+    "selfListen": false,
+    "listenEvents": true,
+    "autoMarkDelivery": false,
+    "autoReconnect": true,
+    "enableTypingIndicator": false,
+    "typingDuration": 3000
+  },
   "database": {
     "type": "json",
     "storagePath": "./data",

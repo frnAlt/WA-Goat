@@ -6,7 +6,7 @@
  * structures and proxying outgoing API calls to the Telegram Bot API (TCA).
  * 
  * @module system/api-adapter
- * @author NTKhang & Modded for Telegram by frnAlt & Gtajisan
+ * @author frnAlt
  */
 
 const { InputFile } = require("grammy");

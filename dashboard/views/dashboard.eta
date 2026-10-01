@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title><%= it.config.nickNameBot || "ST Bot" %> — Dashboard</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/css/dashboard.css">
+        <link rel="icon" type="image/png" href="/images/st.png">
+</head>
+<body>
+
+<div class="shell">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar" id="sidebar">
+                <div class="brand">
+                        <div class="logo">ST</div>
+                        <div class="name"><b><%= it.config.nickNameBot || "ST Bot" %></b><span>Control Panel</span></div>
+                </div>
+
+                <div class="nav-section">Workspace</div>
+                <a class="nav-link active" data-tab="overview">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        Overview
+                </a>
+                <a class="nav-link" data-tab="files">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                        File Explorer
+                </a>
+                <a class="nav-link" data-tab="console">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                        Live Console
+                </a>
+                <a class="nav-link" data-tab="stai">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.7 5.3L19 9l-5.3 1.7L12 16l-1.7-5.3L5 9l5.3-1.7L12 2z"/><path d="M19 15l.9 2.6 2.6.9-2.6.9L19 23l-.9-2.6-2.6-.9 2.6-.9L19 15z"/><path d="M4 14l.7 2.3L7 17l-2.3.7L4 20l-.7-2.3L1 17l2.3-.7L4 14z"/></svg>
+                        STAI Agent
+                </a>
+
+                <div class="nav-section">Configuration</div>
+                <a class="nav-link" data-tab="config">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        config.json
+                </a>
+                <a class="nav-link" data-tab="cookies">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-7.6-4.7 8.38 8.38 0 0 1 .9-9.7 8.5 8.5 0 0 1 9.4-2.3"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="9" r="1"/><circle cx="15" cy="15" r="1"/></svg>
+                        Cookies
+                </a>
+                <a class="nav-link" data-tab="scripts">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Scripts
+                </a>
+                <a class="nav-link" data-tab="fca">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        FCA Switcher
+                </a>
+
+                <div class="nav-section">System</div>
+                <a class="nav-link" id="restartBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                        Restart Bot
+                </a>
+                <a class="nav-link" id="logoutBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Logout
+                </a>
+        </aside>
+        <div class="scrim" id="scrim"></div>
+
+        <!-- ============ TOP BAR ============ -->
+        <header class="topbar">
+                <div class="crumb">
+                        <button class="btn btn-ghost mobile-toggle" id="navToggle" aria-label="Open navigation">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        </button>
+                        <span class="here" id="crumbHere">Overview</span>
+                        <span class="sep">/</span>
+                        <span id="crumbSub">Dashboard</span>
+                </div>
+                <div class="right">
+                        <span class="live-pill" id="livePill"><span class="live-dot"></span>Online</span>
+                        <span style="color:var(--text-3);font-family:var(--font-mono);font-size:12px" id="uptimeBadge">—</span>
+                </div>
+        </header>
+
+        <!-- ============ MAIN ============ -->
+        <main class="main">
+
+                <!-- ===== Overview ===== -->
+                <section class="tab-panel active" data-panel="overview">
+                        <div class="page-header">
+                                <div>
+                                        <h1 class="page-title">Welcome back</h1>
+                                        <p class="page-subtitle">Real-time stats and a snapshot of your bot.</p>
+                                </div>
+                                <div style="display:flex;gap:8px">
+                                        <button class="btn btn-ghost" onclick="refreshAll()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                                Refresh
+                                        </button>
+                                        <button class="btn btn-primary" onclick="switchTab('console')">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                                                Open Console
+                                        </button>
+                                </div>
+                        </div>
+
+                        <div class="grid cols-4">
+                                <div class="card glow"><div class="stat">
+                                        <div><div class="label">Threads</div><div class="value" id="totalThreads"><%= it.totalThreads %></div><div class="delta">Active conversations</div></div>
+                                        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                                </div></div>
+                                <div class="card glow"><div class="stat">
+                                        <div><div class="label">Users</div><div class="value" id="totalUsers"><%= it.totalUsers %></div><div class="delta">Known users</div></div>
+                                        <div class="stat-icon violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                                </div></div>
+                                <div class="card glow"><div class="stat">
+                                        <div><div class="label">Prefix</div><div class="value" id="botPrefix"><%= it.config.prefix %></div><div class="delta">Command prefix</div></div>
+                                        <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                                </div></div>
+                                <div class="card glow"><div class="stat">
+                                        <div><div class="label">Uptime</div><div class="value" id="uptimeText">—</div><div class="delta">Since last restart</div></div>
+                                        <div class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                                </div></div>
+                        </div>
+
+                        <div class="grid cols-2" style="margin-top:16px">
+                                <div class="card">
+                                        <div class="section-head"><h3>System Resources</h3><span class="badge" id="hostName" style="font-size:11px;color:var(--text-3);font-family:var(--font-mono)"></span></div>
+                                        <div style="margin-bottom:14px">
+                                                <div class="kv"><span class="k">CPU</span><span class="v" id="cpuLabel">—</span></div>
+                                                <div class="bar" style="margin-top:8px"><i id="cpuBar" style="width:0%"></i></div>
+                                        </div>
+                                        <div style="margin-bottom:14px">
+                                                <div class="kv"><span class="k">Memory</span><span class="v" id="memLabel">—</span></div>
+                                                <div class="bar" style="margin-top:8px"><i id="memBar" style="width:0%"></i></div>
+                                        </div>
+                                        <div class="kv"><span class="k">Node</span><span class="v" id="nodeVer">—</span></div>
+                                        <div class="kv"><span class="k">Project size</span><span class="v" id="projectSize">—</span></div>
+                                        <div class="kv"><span class="k">Bot RAM</span><span class="v" id="botRam">—</span></div>
+                                </div>
+
+                                <div class="card">
+                                        <div class="section-head"><h3>Recent Activity</h3><span style="font-size:11px;color:var(--text-3);font-family:var(--font-mono)" id="logCount">0 lines</span></div>
+                                        <div class="console" id="miniConsole" style="height:280px;border:1px solid var(--line);border-radius:10px;background:#050709;font-size:12px"></div>
+                                </div>
+                        </div>
+                </section>
+
+                <!-- ===== Files ===== -->
+                <section class="tab-panel" data-panel="files">
+                        <div class="page-header">
+                                <div>
+                                        <h1 class="page-title">File Explorer</h1>
+                                        <p class="page-subtitle">Browse, view, edit and manage every file in the project.</p>
+                                </div>
+                                <div style="display:flex;gap:8px">
+                                        <button class="btn btn-ghost" onclick="fxRefresh()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                                Refresh
+                                        </button>
+                                        <button class="btn btn-ghost" onclick="fxNewFile()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                New File
+                                        </button>
+                                        <button class="btn btn-primary" id="fxSaveBtn" onclick="fxSave()" disabled>
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                                Save
+                                        </button>
+                                </div>
+                        </div>
+                        <div class="fx">
+                                <div class="fx-tree" id="fxTree">
+                                        <div class="fx-path" id="fxPath"></div>
+                                        <div id="fxList"><div class="skeleton" style="width:90%;margin:6px 0"></div><div class="skeleton" style="width:80%;margin:6px 0"></div><div class="skeleton" style="width:85%;margin:6px 0"></div></div>
+                                </div>
+                                <div class="fx-editor">
+                                        <div class="fx-toolbar">
+                                                <span class="name" id="fxName">No file selected</span>
+                                                <span class="badge" id="fxLang" style="display:none">TEXT</span>
+                                                <button class="btn btn-danger" id="fxDeleteBtn" onclick="fxDelete()" disabled style="padding:5px 10px;font-size:12px">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                                                        Delete
+                                                </button>
+                                        </div>
+                                        <textarea class="code" id="fxEditor" spellcheck="false" placeholder="Select a file from the tree to view or edit it…" disabled></textarea>
+                                        <div class="fx-empty" id="fxEmpty">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                                <div>Select a file to start editing.<br>Browse anywhere in the project tree on the left.</div>
+                                        </div>
+                                </div>
+                        </div>
+                </section>
+
+                <!-- ===== Console ===== -->
+                <section class="tab-panel" data-panel="console">
+                        <div class="page-header">
+                                <div>
+                                        <h1 class="page-title">Live Console</h1>
+                                        <p class="page-subtitle">Real-time stream of every log line printed by the bot.</p>
+                                </div>
+                                <div style="display:flex;gap:8px">
+                                        <button class="btn btn-ghost" onclick="consoleClear()">Clear</button>
+                                        <button class="btn btn-ghost" onclick="consoleToggleAuto()" id="consoleAutoBtn">Auto-scroll: ON</button>
+                                        <button class="btn btn-primary" onclick="consoleDownload()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                                Download
+                                        </button>
+                                </div>
+                        </div>
+                        <div class="console-wrap">
+                                <div class="console-toolbar">
+                                        <span class="dot"></span><span class="dot y"></span><span class="dot g"></span>
+                                        <span class="title">st-bot — live log stream</span>
+                                        <span style="margin-left:auto" id="streamStatus">connecting…</span>
+                                </div>
+                                <div class="console" id="bigConsole"></div>
+                        </div>
+                </section>
+
+                <!-- ===== STAI ===== -->
+                <section class="tab-panel stai-tab" data-panel="stai">
+                        <div class="page-header">
+                                <div>
+                                        <h1 class="page-title">STAI Agent</h1>
+                                        <p class="page-subtitle">Project-aware dashboard chat for ST BOT.</p>
+                                </div>
+                                <div style="display:flex;gap:8px">
+                                        <button class="btn btn-ghost" id="staiClearBtn">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                                Clear
+                                        </button>
+                                </div>
+                        </div>
+                        <div class="stai-shell">
+                                <div class="stai-stars" aria-hidden="true"></div>
+                                <div class="stai-orbit" aria-hidden="true"></div>
+                                <div class="stai-head">
+                                        <div>
+                                                <div class="stai-kicker">STAI</div>
+                                                <h2>frnAlt project agent</h2>
+                                        </div>
+                                        <span class="stai-status" id="staiStatus"><span></span>Ready</span>
+                                </div>
+                                <div class="stai-messages" id="staiMessages">
+                                        <div class="stai-message assistant">
+                                                <div class="avatar">ST</div>
+                                                <div class="bubble">STAI ready. Ask normally, upload an image, or mention project files with @.</div>
+                                        </div>
+                                </div>
+                                <div class="stai-selected" id="staiSelectedFiles"></div>
+                                <div class="stai-images" id="staiImagePreview"></div>
+                                <form class="stai-composer" id="staiForm">
+                                        <button type="button" class="stai-icon-btn" id="staiUploadBtn" title="Upload image" aria-label="Upload image">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                        </button>
+                                        <input type="file" id="staiImageInput" accept="image/*" multiple hidden>
+                                        <div class="stai-input-wrap">
+                                                <textarea id="staiPrompt" rows="1" placeholder="Message STAI..." autocomplete="off"></textarea>
+                                                <div class="stai-suggest" id="staiSuggest"></div>
+                                        </div>
+                                        <button type="submit" class="stai-send" id="staiSendBtn" title="Send" aria-label="Send">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                        </button>
+                                </form>
+                        </div>
+                </section>
+
+                <!-- ===== Config ===== -->
+                <section class="tab-panel" data-panel="config">
+                        <div class="page-header">
+                                <div>
+                                        <h1 class="page-title">config.json</h1>
+                                        <p class="page-subtitle">Edit the global bot configuration. Changes require a restart.</p>
+                                </div>
+                                <div style="display:flex;gap:8px">
+                                        <button class="btn btn-ghost" onclick="loadConfig()">Reload</button>
+                                        <button class="btn btn-primary" onclick="saveConfig()">Save</button>
+                                </div>
+                        </div>
+                        <div class="card">
+                                <textarea class="code" id="configEditor" spellcheck="false" style="height:60vh;border-radius:10px"></textarea>
+                        </div>
+                </section>
+
+                <!-- ===== Cookies ===== -->
+                <section class="tab-panel" data-panel="cookies">
+                        <div class="page-header">
+                                <div>
+                                        <h1 class="page-title">Cookies</h1>
+                                        <p class="page-subtitle">Manage Facebook session cookies stored in <code>account.txt</code>.</p>
+                                </div>
+                                <div style="display:flex;gap:8px">
+                                        <button class="btn btn-ghost" onclick="loadCookies()">Reload</button>
+                                        <button class="btn btn-warn" onclick="clearCookies()">Clear &amp; Restart</button>
+                                        <button class="btn btn-primary" onclick="saveCookies(true)">Save &amp; Restart</button>
+                                </div>
+                        </div>
+                        <div class="card">
+                                <textarea class="code" id="cookieEditor" spellcheck="false" placeholder='[{"key":"c_user","value":"…"}, …]' style="height:55vh;border-radius:10px"></textarea>
+                                <div style="margin-top:10px;font-size:12px;color:var(--text-2)">
+                                        Tip: paste a JSON array of cookies. Required keys: <code>c_user</code>, <code>xs</code>.
+                                </div>
+                        </div>
+                </section>
+
+                <!-- ===== Scripts ===== -->
+                <section class="tab-panel" data-panel="scripts">
+                        <div class="page-header">
+                                <div>
+                                        <h1 class="page-title">Scripts</h1>
+                                        <p class="page-subtitle">Edit your bot's commands and events with hot-reload.</p>
+                                </div>
+                                <div style="display:flex;gap:8px">
+                                        <select class="input" id="scriptType" style="width:140px" onchange="loadScripts()">
+                                                <option value="cmds">Commands</option>
+                                                <option value="events">Events</option>
+                                        </select>
+                                        <button class="btn btn-ghost" onclick="loadScripts()">Refresh</button>
+                                        <button class="btn btn-primary" id="scriptsSaveBtn" onclick="saveScript()" disabled>Save &amp; Reload</button>
+                                </div>
+                        </div>
+                        <div class="grid" style="grid-template-columns:280px 1fr;gap:16px;align-items:flex-start">
+                                <div class="card" style="padding:10px;max-height:65vh;overflow:auto">
+                                        <div id="scriptList"><div class="skeleton" style="width:90%;margin:6px"></div></div>
+                                </div>
+                                <div class="card" style="padding:0;overflow:hidden">
+                                        <div class="fx-toolbar"><span class="name" id="scriptName">No script selected</span></div>
+                                        <textarea class="code" id="scriptEditor" spellcheck="false" disabled style="height:55vh"></textarea>
+                                </div>
+                        </div>
+                </section>
+
+                <!-- ===== FCA ===== -->
+                <section class="tab-panel" data-panel="fca">
+                        <div class="page-header">
+                                <div>
+                                        <h1 class="page-title">FCA Switcher</h1>
+                                        <p class="page-subtitle">Choose which FCA package the bot uses to talk to Facebook.</p>
+                                </div>
+                        </div>
+                        <div class="card">
+                                <div id="fcaCurrent" style="margin-bottom:14px;color:var(--text-2);font-size:13px">Loading current FCA…</div>
+                                <div class="grid cols-3" id="fcaGrid"></div>
+                        </div>
+                </section>
+
+        </main>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<div class="modal-back" id="modalBack">
+        <div class="modal">
+                <h4 id="modalTitle">Confirm</h4>
+                <p id="modalBody">Are you sure?</p>
+                <div class="actions">
+                        <button class="btn btn-ghost" onclick="closeModal(false)">Cancel</button>
+                        <button class="btn btn-primary" onclick="closeModal(true)" id="modalConfirm">Confirm</button>
+                </div>
+        </div>
+</div>
+
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

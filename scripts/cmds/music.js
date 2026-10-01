@@ -1,5 +1,5 @@
 /**
- * @author Neoaz 🐊 & frnAlt (Gtajisan)
+ * @author frnAlt
  * High-Speed Music Player & Catalog Search powered by Facebook Stories (RelayModern)
  * Optimized for low-latency direct streaming without disk I/O bottlenecks.
  */
@@ -137,7 +137,7 @@ module.exports = {
 		name: "music",
 		aliases: ["fca-music", "fbmusic", "track", "stickermusic"],
 		version: "1.2.0",
-		author: "Neoaz 🐊 & frnAlt",
+		author: "frnAlt",
 		countDown: 1, // Minimal cooldown to eliminate command delay
 		role: 0,
 		description: {

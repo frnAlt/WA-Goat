@@ -250,7 +250,7 @@ module.exports = {
         
         ctx.fillStyle = "#ffffff60";
         ctx.font = "16px Arial";
-        ctx.fillText("Powered by ST | Sheikh Tamim", width/2, height - 20);
+        ctx.fillText("Powered by frnAlt", width/2, height - 20);
         
         encoder.addFrame(ctx);
       }

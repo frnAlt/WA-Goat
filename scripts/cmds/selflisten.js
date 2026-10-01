@@ -5,7 +5,7 @@ module.exports = {
 		name: "selflisten",
 		aliases: ["sl", "selflistenmode"],
 		version: "1.0",
-		author: "Neoaz 🐊",
+		author: "frnAlt",
 		countDown: 5,
 		role: 2,
 		description: {

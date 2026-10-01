@@ -1,6 +1,6 @@
 /**
- * @author frnAlt & NTKhang
- * Floppa-Chatbot Backward-Compatible Entrypoint for WhatsApp
+ * @author frnAlt
+ * Floppa-Chatbot WhatsApp Edition - Floppa-WCA Backward-Compatible Entrypoint
  */
 
 require('./src/index.js');

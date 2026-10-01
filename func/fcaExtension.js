@@ -141,6 +141,7 @@ function extendFCA(api) {
   const domainApis = createDomainNamespaces(api, queue, cache);
   api.messages = domainApis.messages;
   api.threads = domainApis.threads;
+  api.groups = domainApis.threads;
   api.users = domainApis.users;
   api.account = domainApis.account;
 

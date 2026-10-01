@@ -9,16 +9,16 @@ module.exports = {
     countDown: 20,
     role: 0,
     shortDescription: "Owner information command",
-    longDescription: "This command provides detailed info about Sheikh Tamim — the bot owner, uptime, and social contacts.",
+    longDescription: "This command provides detailed info about frnAlt — the bot owner, uptime, and contacts.",
     category: "owner",
     guide: {}
   },
 
   onStart: async function ({ message }) {
-    const authorName = "ST | Sheikh Tamim";
-    const ownAge = "⫷ 21 Years Old ⫸";
-    const messenger = "m.me/sheikhtamimlover";
-    const authorFB = "https://facebook.com/sheikhtamimlover";
+    const authorName = "frnAlt";
+    const ownAge = "⫷ Developer ⫸";
+    const messenger = "github.com/frnAlt";
+    const authorFB = "https://github.com/frnAlt";
     const authorNumber = "+88017XXXXXXX";
     const Status = "⫷ 💫 Keep Calm & Code On 💫 ⫸";
 
@@ -52,14 +52,10 @@ module.exports = {
 ⭓ 🎂 𝗔𝗴𝗲          : 『 ${ownAge} 』
 ⭓ ❤️ 𝗦𝘁𝗮𝘁𝘂𝘀       : 『 ${Status} 』
 ⭓ 📱 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽    : 『 ${authorNumber} 』
-⭓ 🌐 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸    : 『 ${authorFB} 』
+⭓ 🌐 𝗚𝗶𝘁𝗛𝘂𝗯      : 『 ${authorFB} 』
 
 ╔═《🌍 𝗦𝗢𝗖𝗜𝗔𝗟𝗦》═╗
-• 📺 YouTube    : ❝ @sheikhtamimlover ❞
-• ✈️ Telegram  : @sheikh_tamim
-• 📷 Instagram : @sheikh.tamim_lover
-• 🧿 CapCut    : ❝ @sheikhtamim ❞
-• 🎵 TikTok     : ❝ @sheikhtamimlover ❞
+• 🐙 GitHub     : ❝ @frnAlt ❞
 ╚════════════════════╝`,
 
       attachment: await global.utils.getStreamFromURL(link)

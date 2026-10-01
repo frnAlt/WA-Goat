@@ -4,7 +4,7 @@ const os = require("os");
 module.exports = {
   config: {
     name: "status",
-    aliases: ["health", "ping"],
+    aliases: ["health", "diag"],
     version: "2.4.60",
     author: "frnAlt",
     role: 0,
@@ -149,7 +149,7 @@ module.exports = {
 └─ Active Sessions: ${Object.keys(global.GoatBot?.onReply || {}).length}
 
 ╭─────────────────────────────────╮
-│     Powered by ST | Sheikh Tamim     │
+│        Powered by frnAlt        │
 ╰─────────────────────────────────╯`;
 
         await api.editMessage(response, loadingMessage.messageID);

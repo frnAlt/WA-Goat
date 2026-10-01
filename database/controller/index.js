@@ -1,8 +1,18 @@
 const { graphQlQueryToJson } = require("graphql-query-to-json");
 const ora = require("ora");
-const { log, getText } = global.utils;
-const { config } = global.GoatBot;
-let databaseType = config.database.type;
+global.utils = global.utils || {};
+const log = global.utils.log || { info: console.log, err: console.error, warn: console.warn };
+const getText = global.utils.getText || ((...a) => a.join(" "));
+global.GoatBot = global.GoatBot || {};
+if (!global.GoatBot.config) {
+	try {
+		global.GoatBot.config = require("../../config.json");
+	} catch (_) {
+		global.GoatBot.config = { database: { type: "json" } };
+	}
+}
+const config = global.GoatBot.config || {};
+let databaseType = config.database ? config.database.type : "json";
 
 // with add null if not found data
 function fakeGraphql(query, data, obj = {}) {
@@ -56,7 +66,8 @@ class DatabaseCacheManager {
 	}
 
 	_startCleanupInterval() {
-		setInterval(() => this._cleanup(), this.options.cleanupInterval);
+		const interval = setInterval(() => this._cleanup(), this.options.cleanupInterval);
+		if (interval && interval.unref) interval.unref();
 	}
 
 	_cleanup() {
@@ -169,7 +180,7 @@ class DatabaseCacheManager {
 // Initialize cache manager globally
 global.dbCacheManager = new DatabaseCacheManager();
 
-module.exports = async function (api) {
+const controllerInit = async function (api) {
 	var threadModel, userModel, dashBoardModel, globalModel, sequelize = null;
 	switch (databaseType) {
 		case "mongodb": {
@@ -271,3 +282,30 @@ module.exports = async function (api) {
 		databaseType
 	};
 };
+
+function attachGlobalDB() {
+	try {
+		const userDataCtrl = require("./userData.js");
+		const threadsDataCtrl = require("./threadsData.js");
+		const globalDataCtrl = require("./globalData.js");
+		global.ST = global.ST || {};
+		global.ST.DB = {
+			userData: userDataCtrl.userData || userDataCtrl.get,
+			threadsData: threadsDataCtrl.threadsData || threadsDataCtrl.get,
+			globalData: globalDataCtrl,
+			users: userDataCtrl,
+			threads: threadsDataCtrl,
+		};
+		global.userData = global.ST.DB.userData;
+		global.threadsData = global.ST.DB.threadsData;
+	} catch (_) {}
+}
+
+controllerInit.attachGlobalDB = attachGlobalDB;
+try {
+	controllerInit.userData = require("./userData.js");
+	controllerInit.threadsData = require("./threadsData.js");
+	controllerInit.globalData = require("./globalData.js");
+} catch (_) {}
+
+module.exports = controllerInit;

@@ -401,7 +401,7 @@ module.exports = {
         ctx.fillStyle = "#ffffff80";
         ctx.font = "20px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("🎰 Powered by ST | Sheikh Tamim 🎰", width/2, height - 30);
+        ctx.fillText("🎰 Powered by frnAlt 🎰", width/2, height - 30);
         
         encoder.addFrame(ctx);
       }

@@ -1,9 +1,9 @@
 /**
- * Goat Bot V2 for WhatsApp
- * High-Performance WhatsApp Chatbot powered by Baileys v7.0.0-rc14
+ * Goat Bot V2 for WhatsApp (Floppa-WCA & Dashboard Edition)
+ * High-Performance WhatsApp Chatbot powered by Baileys v7.0.0-rc14 & Floppa-WCA
  * 
- * Lead Architect: frnAlt (Farhan Muh Tasim)
- * Built with: Knightbot-MD & KnightBot-Mini architecture + Floppa-Chatbot functionality
+ * Lead Architect: frnAlt
+ * Built with: Floppa-WCA Client Engine
  */
 
 const path = require('path');
@@ -55,9 +55,44 @@ async function main() {
   // 4. Initialize Background Scheduler & Cleaners
   scheduler.init();
 
+  // 4.5. Initialize Web Dashboard & Server
+  if (config.dashBoard && config.dashBoard.enable !== false && process.env.NO_DASHBOARD !== '1') {
+    try {
+      const dashboardInit = require(path.resolve(process.cwd(), 'dashboard/app.js'));
+      await dashboardInit();
+      logger.info(`Web Dashboard mounted on port ${config.dashBoard.port || 5000}`);
+    } catch (err) {
+      logger.warn(`[DASHBOARD] Could not initialize web dashboard: ${err.message}`);
+    }
+  }
+
   // 5. Connect to WhatsApp via Baileys v7
   try {
     const sock = await client.connect();
+
+    // Initialize and bridge Floppa-WCA Engine
+    try {
+      let buildAPI;
+      try {
+        buildAPI = require(path.resolve(process.cwd(), 'floppa-wca')).buildAPI;
+      } catch (_) {
+        buildAPI = require(path.resolve(process.cwd(), 'wca')).buildAPI;
+      }
+      const wcaApi = buildAPI(sock, {
+        selfID: sock.user?.id || '',
+        sock,
+        globalOptions: config.wca || {}
+      });
+      global.floppaWca = wcaApi;
+      global.wcaApi = wcaApi;
+      global.api = wcaApi;
+      global.GoatBot = global.GoatBot || {};
+      global.GoatBot.api = wcaApi;
+      if (global.ST) global.ST.api = wcaApi;
+      logger.info('Floppa-WCA Engine & Conduit extensions mounted successfully.');
+    } catch (wcaErr) {
+      logger.warn(`[FLOPPA-WCA] Note: Engine wrapper could not be auto-bound: ${wcaErr.message}`);
+    }
 
     // Bind Core Message Stream
     sock.ev.on('messages.upsert', async (chatUpdate) => {

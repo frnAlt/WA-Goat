@@ -4,7 +4,7 @@ const fs = require("fs-extra");
 module.exports = {
 	config: {
 		name: "whitelist",
-		aliases: ["wlist", "white-list"],
+		aliases: ["wl", "wlist", "white-list", "wlistmode", "whitelistmode"],
 		version: "2.4.73",
 		author: "frnAlt",
 		countDown: 5,

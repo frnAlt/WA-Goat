@@ -1,5 +1,5 @@
 /**
- * @author frnAlt & Neoaz 🐊
+ * @author frnAlt
  * Paced system uptime and diagnostics card with automated Facebook logout safeguard
  * Source foundation: NKX-BOT (GoatBot v2)
  */
@@ -13,7 +13,7 @@ module.exports = {
 		name: "uptime",
 		aliases: ["upt", "floppauptime", "serveruptime"],
 		version: "2.0.0",
-		author: "frnAlt & Neoaz 🐊",
+		author: "frnAlt",
 		countDown: 5,
 		role: 0,
 		description: {

@@ -1,5 +1,5 @@
 /**
- * @author frnAlt & NTKhang
+ * @author frnAlt
  * Help Command - GoatBot V2 Signature Format for WhatsApp
  * Matches https://github.com/lazyneoaz/Goatbot-V2/blob/main/scripts/cmds/help.js
  */
@@ -11,7 +11,7 @@ module.exports = {
   config: {
     name: 'help',
     version: '1.21',
-    author: 'frnAlt & NTKhang',
+    author: "frnAlt",
     countDown: 2,
     role: 0,
     category: 'info',
@@ -32,7 +32,7 @@ module.exports = {
   description: 'View command usage and information',
   usage: '{p}help [command name] [-u|-i|-r|-a]',
   version: '1.21',
-  author: 'frnAlt & NTKhang',
+  author: "frnAlt",
   cooldown: 2,
   role: 0,
 
@@ -52,7 +52,7 @@ module.exports = {
       const raw = command.raw?.config || command.raw || {};
       const name = command.name;
       const desc = raw.description?.en || raw.description || command.description || 'No description available';
-      const author = raw.author || command.author || 'frnAlt & Goat Bot Contributors';
+      const author = raw.author || command.author || 'frnAlt';
       const version = raw.version || command.version || '1.0.0';
       const aliasesList = command.aliases && command.aliases.length > 0 ? command.aliases.join(', ') : 'Do not have';
       const aliasesThisGroup = 'Do not have';

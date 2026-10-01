@@ -329,7 +329,7 @@ module.exports = {
         ctx.font = "16px Arial";
         ctx.shadowColor = neonColors.pink;
         ctx.shadowBlur = 15;
-        ctx.fillText("⚡ Powered by ST | Sheikh Tamim ⚡", width/2, height - 20);
+        ctx.fillText("⚡ Powered by frnAlt ⚡", width/2, height - 20);
         ctx.shadowBlur = 0;
         
         encoder.addFrame(ctx);

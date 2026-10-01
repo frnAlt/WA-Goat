@@ -1,5 +1,5 @@
 /**
- * @author frnAlt & NTKhang
+ * @author frnAlt
  * Profile Picture (PFP / DP) Command for WhatsApp
  * Fetches high-definition profile picture of caller, tagged member, quoted sender, or group icon
  */
@@ -12,7 +12,7 @@ module.exports = {
     name: 'pfp',
     aliases: ['profilepic', 'getpfp', 'dp', 'pp', 'avatar'],
     version: '2.5.0',
-    author: 'frnAlt',
+    author: "frnAlt",
     countDown: 3,
     role: 0,
     category: 'utility',
@@ -36,7 +36,7 @@ module.exports = {
   category: 'utility',
   description: 'Fetch HD profile picture of user, mentioned contact, or group',
   usage: '{p}pfp [@user | phone_number | group]',
-  author: 'frnAlt',
+  author: "frnAlt",
   version: '2.5.0',
   cooldown: 3,
   role: 0,

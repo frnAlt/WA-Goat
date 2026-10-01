@@ -387,7 +387,7 @@ async function downloadAndProcessAudio({ youtubeUrl = null, title = "song", dura
 module.exports = {
   config: {
     name: "sing",
-    aliases: ["song", "music", "play"],
+    aliases: ["song", "play"],
     version: "3.5.0",
     author: "frnAlt",
     countDown: 5,

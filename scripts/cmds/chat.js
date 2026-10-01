@@ -1,5 +1,5 @@
 /**
- * @author frnAlt & Gtajisan
+ * @author frnAlt
  * ! Floppa-Chatbot Interactive Conversational AI Chat Engine
  * ! Multi-LLM Routing, Context Memory, Continuous onReply Dialogue, & DM Optimization
  */
@@ -14,7 +14,7 @@ module.exports = {
     name: "chat",
     aliases: ["talk", "floppa"],
     version: "2.5.0",
-    author: "frnAlt & Gtajisan",
+    author: "frnAlt",
     countDown: 2,
     role: 0,
     shortDescription: {
