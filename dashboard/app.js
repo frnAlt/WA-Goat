@@ -9,6 +9,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const http = require("http");
 const { execSync } = require('child_process');
+const waWebAuth = require('../src/utils/waWebAuth');
 const server = http.createServer(app);
 
 // ————————————————— LIVE CONSOLE STREAM ————————————————— //
@@ -307,7 +308,13 @@ module.exports = async (api) => {
         app.post("/api/stai/chat", async (req, res) => {
                 const uploadedPaths = [];
                 try {
-                        const { STAgent, formatStaiError } = require("../bot/stagent.js");
+                        let STAgent = null;
+                        try {
+                                STAgent = require("./stagent.js").STAgent;
+                        } catch (_) {}
+                        if (!STAgent) {
+                                return res.status(503).json({ success: false, message: "AI Agent module not configured" });
+                        }
                         const prompt = String(req.body?.prompt || "").trim();
                         if (!prompt) {
                                 return res.status(400).json({ success: false, message: "Prompt is required" });
@@ -409,8 +416,7 @@ module.exports = async (api) => {
                                 uploads: uploads.map(item => ({ name: item.filename, url: item.url, type: item.mimeType }))
                         });
                 } catch (error) {
-                        const formatter = require("../bot/stagent.js").formatStaiError;
-                        const message = formatter ? formatter(error) : error.message;
+                        const message = error && error.message ? error.message : String(error);
                         console.error("STAI dashboard error:", message);
                         res.status(500).json({ success: false, message });
                 }
@@ -420,7 +426,7 @@ module.exports = async (api) => {
         app.get('/api/file/:filename', async (req, res) => {
                 try {
                         const filename = req.params.filename;
-                        const allowedFiles = ['config.json', 'account.txt'];
+                        const allowedFiles = ['config.json', 'account.txt', 'wa_web.json', 'acc.txt'];
 
                         if (!allowedFiles.includes(filename)) {
                                 return res.status(400).json({
@@ -429,8 +435,19 @@ module.exports = async (api) => {
                                 });
                         }
 
-                        const filePath = process.cwd() + '/' + filename;
-                        const content = await fs.readFile(filePath, 'utf8');
+                        const filePath = path.join(process.cwd(), filename);
+                        let content = '';
+                        if (await fs.pathExists(filePath)) {
+                                content = await fs.readFile(filePath, 'utf8');
+                        } else if (filename === 'account.txt' || filename === 'wa_web.json' || filename === 'acc.txt') {
+                                const sessionDir = path.resolve(process.cwd(), config.sessionPath || './auth');
+                                content = await waWebAuth.readWaWebSessionContent(sessionDir);
+                        } else {
+                                return res.status(404).json({
+                                        success: false,
+                                        message: 'File not found'
+                                });
+                        }
 
                         res.json({
                                 success: true,
@@ -445,6 +462,25 @@ module.exports = async (api) => {
                 }
         });
 
+        function getScriptPath(type, filename) {
+                const legacy = path.join(process.cwd(), 'scripts', type, filename || '');
+                if (fs.existsSync(path.join(process.cwd(), 'scripts', type))) return legacy;
+                const baseDir = type === 'events' ? path.join(process.cwd(), 'src/events') : path.join(process.cwd(), 'src/commands');
+                if (!filename) return baseDir;
+                const direct = path.join(baseDir, filename);
+                if (fs.existsSync(direct)) return direct;
+                if (type !== 'events') {
+                        try {
+                                const subdirs = fs.readdirSync(baseDir, { withFileTypes: true }).filter(d => d.isDirectory());
+                                for (const sub of subdirs) {
+                                        const candidate = path.join(baseDir, sub.name, filename);
+                                        if (fs.existsSync(candidate)) return candidate;
+                                }
+                        } catch (_) {}
+                }
+                return legacy;
+        }
+
         // Get all JS files in scripts directories
         app.get('/api/scripts/:type', async (req, res) => {
                 try {
@@ -457,9 +493,30 @@ module.exports = async (api) => {
                                 });
                         }
 
+                        let jsFiles = [];
                         const scriptsPath = `${process.cwd()}/scripts/${type}`;
-                        const files = await fs.readdir(scriptsPath);
-                        const jsFiles = files.filter(file => file.endsWith('.js') && !file.endsWith('.eg.js'));
+                        if (await fs.pathExists(scriptsPath)) {
+                                const files = await fs.readdir(scriptsPath);
+                                jsFiles = files.filter(file => file.endsWith('.js') && !file.endsWith('.eg.js'));
+                        } else {
+                                const baseDir = type === 'events' ? `${process.cwd()}/src/events` : `${process.cwd()}/src/commands`;
+                                if (await fs.pathExists(baseDir)) {
+                                        if (type === 'events') {
+                                                const files = await fs.readdir(baseDir);
+                                                jsFiles = files.filter(file => file.endsWith('.js') && !file.endsWith('.eg.js'));
+                                        } else {
+                                                const entries = await fs.readdir(baseDir, { withFileTypes: true });
+                                                for (const entry of entries) {
+                                                        if (entry.isDirectory()) {
+                                                                const subFiles = await fs.readdir(path.join(baseDir, entry.name));
+                                                                jsFiles.push(...subFiles.filter(file => file.endsWith('.js')));
+                                                        } else if (entry.name.endsWith('.js')) {
+                                                                jsFiles.push(entry.name);
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
 
                         res.json({
                                 success: true,
@@ -493,7 +550,7 @@ module.exports = async (api) => {
                                 });
                         }
 
-                        const filePath = `${process.cwd()}/scripts/${type}/${filename}`;
+                        const filePath = getScriptPath(type, filename);
 
                         // Check if file exists
                         if (!await fs.pathExists(filePath)) {
@@ -524,7 +581,7 @@ module.exports = async (api) => {
                 try {
                         const filename = req.params.filename;
                         const { content } = req.body;
-                        const allowedFiles = ['config.json', 'account.txt'];
+                        const allowedFiles = ['config.json', 'account.txt', 'wa_web.json', 'acc.txt'];
 
                         if (!allowedFiles.includes(filename)) {
                                 return res.status(400).json({
@@ -545,49 +602,22 @@ module.exports = async (api) => {
                                 }
                         }
 
-                        // Enhanced validation for account.txt (cookies)
-                        if (filename === 'account.txt') {
-                                try {
-                                        const parsed = JSON.parse(content);
-                                        if (!Array.isArray(parsed)) {
+                        // WhatsApp Web Access Token & Session validation
+                        if (filename === 'account.txt' || filename === 'wa_web.json' || filename === 'acc.txt') {
+                                if (content && content.trim().length > 0) {
+                                        const parsed = waWebAuth.parseWaWebToken(content);
+                                        if (!parsed) {
                                                 return res.status(400).json({
                                                         success: false,
-                                                        message: 'Account.txt must be a JSON array of cookies'
+                                                        message: 'Invalid wa_web_access_token or WhatsApp session credentials format'
                                                 });
                                         }
-
-                                        // Validate cookie structure
-                                        for (const cookie of parsed) {
-                                                if (typeof cookie !== 'object' || !cookie.key || !cookie.value) {
-                                                        return res.status(400).json({
-                                                                success: false,
-                                                                message: 'Invalid cookie format. Each cookie must have "key" and "value" properties'
-                                                        });
-                                                }
-                                        }
-
-                                        // Check for essential cookies
-                                        const essentialKeys = ['c_user', 'xs'];
-                                        const hasEssential = essentialKeys.some(key => 
-                                                parsed.some(cookie => cookie.key === key)
-                                        );
-
-                                        if (!hasEssential) {
-                                                return res.status(400).json({
-                                                        success: false,
-                                                        message: 'Warning: Missing essential cookies (c_user, xs). Bot may not work properly.'
-                                                });
-                                        }
-
-                                } catch (error) {
-                                        return res.status(400).json({
-                                                success: false,
-                                                message: 'Invalid JSON format in cookies'
-                                        });
+                                        const sessionDir = path.resolve(process.cwd(), config.sessionPath || './auth');
+                                        await waWebAuth.applyWaWebToken(content, sessionDir);
                                 }
                         }
 
-                        const filePath = process.cwd() + '/' + filename;
+                        const filePath = path.join(process.cwd(), filename);
                         await fs.writeFile(filePath, content, 'utf8');
 
                         // GitHub sync for config.json only (not account.txt for security)
@@ -649,7 +679,7 @@ module.exports = async (api) => {
                                 });
                         }
 
-                        const filePath = `${process.cwd()}/scripts/${type}/${filename}`;
+                        const filePath = getScriptPath(type, filename);
                         const isNewFile = !await fs.pathExists(filePath);
 
                         // Save the file
@@ -750,7 +780,7 @@ module.exports = async (api) => {
                                 });
                         }
 
-                        const filePath = `${process.cwd()}/scripts/${type}/${filename}`;
+                        const filePath = getScriptPath(type, filename);
 
                         // Check if file already exists
                         if (await fs.pathExists(filePath)) {
@@ -793,7 +823,7 @@ module.exports = async (api) => {
                                 });
                         }
 
-                        const filePath = `${process.cwd()}/scripts/${type}/${filename}`;
+                        const filePath = getScriptPath(type, filename);
 
                         if (!await fs.pathExists(filePath)) {
                                 return res.status(404).json({
@@ -862,29 +892,33 @@ module.exports = async (api) => {
                 }
         });
 
-        // Clear cookies and restart endpoint
+        // Clear session token and restart endpoint
         app.post('/api/clear-cookies-restart', async (req, res) => {
                 try {
-                        const accountPath = process.cwd() + '/account.txt';
+                        const accountPath = path.resolve(process.cwd(), 'account.txt');
+                        const waWebPath = path.resolve(process.cwd(), 'wa_web.json');
+                        const sessionDir = path.resolve(process.cwd(), config.sessionPath || './auth');
 
-                        // Clear account.txt by writing empty string (not [])
-                        await fs.writeFile(accountPath, '', 'utf8');
+                        // Clear files and auth credentials
+                        await fs.writeFile(accountPath, '', 'utf8').catch(() => {});
+                        await fs.writeFile(waWebPath, '{}', 'utf8').catch(() => {});
+                        await fs.remove(sessionDir).catch(() => {});
 
                         res.json({ 
                                 status: 'success', 
-                                message: '🗑️ Cookies cleared. Bot will restart and login using config.json credentials.' 
+                                message: '🗑️ WhatsApp Web session and token cleared. Bot will restart.' 
                         });
 
                         // Restart after sending response
                         setTimeout(() => {
-                                console.log('🗑️ Cookies cleared, restarting bot...');
+                                console.log('🗑️ Session cleared, restarting bot...');
                                 process.exit(2); // Exit code 2 for restart
                         }, 1000);
                 } catch (error) {
-                        console.error('Clear cookies error:', error);
+                        console.error('Clear session error:', error);
                         res.status(500).json({ 
                                 status: 'error', 
-                                message: 'Failed to clear cookies: ' + error.message 
+                                message: 'Failed to clear session: ' + error.message 
                         });
                 }
         });
@@ -953,70 +987,38 @@ module.exports = async (api) => {
                 }
         });
 
-        // Cookie update endpoint
-        app.post("/update-cookie", async (req, res) => {
+        // WhatsApp Web Access Token / Session update endpoint
+        app.post(["/update-cookie", "/api/update-session"], async (req, res) => {
                 try {
-                        const { cookieData, restartBot } = req.body;
+                        const { cookieData, tokenData, restartBot } = req.body;
+                        const rawData = String(tokenData || cookieData || "").trim();
 
-                        if (!cookieData) {
+                        if (!rawData) {
                                 return res.status(400).json({
                                         status: "error",
-                                        message: "Cookie data is required"
+                                        message: "wa_web_access_token or session data is required"
                                 });
                         }
 
-                        // Validate JSON format
-                        let cookies;
-                        try {
-                                cookies = JSON.parse(cookieData);
-                        } catch (error) {
+                        const parsed = waWebAuth.parseWaWebToken(rawData);
+                        if (!parsed) {
                                 return res.status(400).json({
                                         status: "error",
-                                        message: "Invalid JSON format"
+                                        message: "Invalid WhatsApp Web access token or credentials format. Please provide a valid WA_WEB~ token, creds JSON, or session object."
                                 });
                         }
 
-                        // Validate cookie structure
-                        if (!Array.isArray(cookies)) {
-                                return res.status(400).json({
+                        const sessionDir = path.resolve(process.cwd(), config.sessionPath || './auth');
+                        const applyResult = await waWebAuth.applyWaWebToken(rawData, sessionDir);
+
+                        if (!applyResult.success) {
+                                return res.status(500).json({
                                         status: "error",
-                                        message: "Cookie data must be an array"
+                                        message: applyResult.error || "Failed to apply session token"
                                 });
                         }
 
-                        // Check for required cookies
-                        const requiredKeys = ['c_user', 'xs', 'datr'];
-                        const hasRequired = requiredKeys.some(key => 
-                                cookies.some(cookie => cookie.key === key)
-                        );
-
-                        if (!hasRequired) {
-                                return res.status(400).json({
-                                        status: "error",
-                                        message: "Missing required cookies (c_user, xs, or datr)"
-                                });
-                        }
-
-                        // Format cookies properly
-                        const formattedCookies = cookies.map(cookie => ({
-                                key: cookie.key,
-                                value: cookie.value,
-                                domain: cookie.domain || "facebook.com",
-                                path: cookie.path || "/",
-                                hostOnly: typeof cookie.hostOnly === 'boolean' ? cookie.hostOnly : false,
-                                creation: cookie.creation || new Date().toISOString(),
-                                lastAccessed: cookie.lastAccessed || new Date().toISOString(),
-                                ...(cookie.expires && { expires: cookie.expires }),
-                                ...(cookie.maxAge && { maxAge: cookie.maxAge }),
-                                ...(cookie.secure && { secure: cookie.secure }),
-                                ...(cookie.httpOnly && { httpOnly: cookie.httpOnly })
-                        }));
-
-                        // Save to account.txt
-                        const accountPath = process.cwd() + '/account.txt';
-                        await fs.writeFile(accountPath, JSON.stringify(formattedCookies, null, 4));
-
-                        let message = "Cookies updated successfully!";
+                        let message = "WhatsApp Web access token & session updated successfully!";
 
                         // Restart bot if requested
                         if (restartBot === 'true' || restartBot === true) {
@@ -1028,7 +1030,8 @@ module.exports = async (api) => {
 
                         res.json({
                                 status: "success",
-                                message: message
+                                message: message,
+                                token: applyResult.token
                         });
 
                 } catch (error) {
@@ -1045,9 +1048,9 @@ module.exports = async (api) => {
                 try {
                         let fcaVersion;
                         try {
-                                fcaVersion = require("fb-chat-api/package.json").version;
+                                fcaVersion = require("../floppa-wca/package.json").version;
                         } catch (e) {
-                                fcaVersion = "unknown";
+                                fcaVersion = "2.0.0";
                         }
 
                         const totalThread = global.db?.threadsData ? (await global.db.threadsData.getAll()).filter(t => t.threadID.toString().length > 15).length : 0;
@@ -1355,7 +1358,7 @@ module.exports = async (api) => {
 
         if (config && config.serverUptime && config.serverUptime.socket && config.serverUptime.socket.enable == true) {
                 try {
-                        const socketMod = require("../bot/login/socketIo.js");
+                        const socketMod = require("./socketIo.js");
                         if (typeof socketMod._socketSetup === "function") {
                                 await socketMod._socketSetup(server);
                         }

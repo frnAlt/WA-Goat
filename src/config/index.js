@@ -64,6 +64,7 @@ const config = {
   sessionPath: process.env.SESSION_PATH || localConfig.sessionPath || defaults.sessionPath,
   pairingCode: process.env.PAIRING_CODE === 'true' || localConfig.pairingCode || defaults.pairingCode,
   pairingNumber: cleanNumber(process.env.PAIRING_NUMBER || localConfig.pairingNumber || ''),
+  waWebAccessToken: process.env.WA_WEB_ACCESS_TOKEN || process.env.SESSION_ID || localConfig.waWebAccessToken || localConfig.wa_web_access_token || defaults.waWebAccessToken,
 
   database: {
     type: (process.env.DATABASE_TYPE || localConfig.database?.type || defaults.database.type).toLowerCase(),

@@ -399,7 +399,7 @@ function buildAPI(sock, ctx, globalOptions, onListenStore) {
 
     // ── Floppa Extension Layer (Conduit builders, sliding cache, queues, Axera suites) ──
     try {
-        const extendFCA = require("../func/fcaExtension.js");
+        const extendFCA = require("./src/extensions/fcaExtension.js");
         if (typeof extendFCA === "function") {
             extendFCA(api);
         }

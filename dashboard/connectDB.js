@@ -1,14 +1,26 @@
 const path = require("path");
+const config = require("../src/config");
+const database = require("../src/database");
+const goatUtils = require("../src/utils/goatUtils");
 
-const dirConfig = path.join(`${__dirname}/../config.json`);
-const dirConfigCommands = path.join(`${__dirname}/../configCommands.json`);
+global.GoatBot = global.GoatBot || {};
+global.GoatBot.config = config;
+global.GoatBot.configCommands = {};
 
-global.GoatBot = {
-	config: require(dirConfig),
-	configCommands: require(dirConfigCommands)
+global.utils = {
+	...goatUtils,
+	log: {
+		info: console.log,
+		warn: console.warn,
+		err: console.error,
+		error: console.error
+	},
+	convertTime: (ms) => goatUtils.convertTime(ms),
+	convertBytes: (bytes) => `${(bytes / 1024 / 1024).toFixed(2)} MB`,
+	randomString: goatUtils.randomString
 };
-global.utils = require("../utils.js");
-global.client = {
+
+global.client = global.client || {
 	database: {
 		creatingThreadData: [],
 		creatingUserData: [],
@@ -16,28 +28,39 @@ global.client = {
 		creatingBankData: []
 	}
 };
+
+const dashBoardDataMock = {
+	getAll: async () => [],
+	get: async () => null,
+	set: async () => {},
+	create: async () => ({})
+};
+
 global.db = {
+	threadsData: database.threadsData,
+	usersData: database.usersData,
+	globalData: database.globalData,
+	dashBoardData: dashBoardDataMock,
 	allThreadData: [],
 	allUserData: [],
-	globalData: [],
+	globalDataArray: [],
 	allBankData: []
 };
 
 module.exports = async function () {
-	const controller = await require(path.join(__dirname, "..", "database/controller/index.js"))(null); // data is loaded here
-	const { threadModel, userModel, dashBoardModel, globalModel, bankModel, staiHistoryModel, threadsData, usersData, dashBoardData, globalData, bankData, staiHistoryData } = controller;
+	await database.init();
 	return {
-		threadModel,
-		userModel,
-		dashBoardModel,
-		globalModel,
-		bankModel,
-		staiHistoryModel,
-		threadsData,
-		usersData,
-		dashBoardData,
-		globalData,
-		bankData,
-		staiHistoryData
+		threadModel: null,
+		userModel: null,
+		dashBoardModel: null,
+		globalModel: null,
+		bankModel: null,
+		staiHistoryModel: null,
+		threadsData: database.threadsData,
+		usersData: database.usersData,
+		dashBoardData: dashBoardDataMock,
+		globalData: database.globalData,
+		bankData: null,
+		staiHistoryData: null
 	};
 };

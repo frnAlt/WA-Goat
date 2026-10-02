@@ -7,48 +7,43 @@ process.env.NO_SERVER_LISTEN = "1";
 // Lightweight globals initialization for serverless execution
 if (!global.GoatBot) {
 	let config = {};
-	let configCommands = {};
 	try {
-		config = require(path.join(process.cwd(), "config.json"));
+		config = require(path.join(process.cwd(), "src/config"));
 	} catch (_) {
 		config = {
-			nickNameBot: "Floppa-Chatbot",
-			prefix: "-",
+			nickNameBot: "Goat Bot V2 🐐",
+			prefix: "!",
 			botOff: false,
-			adminBot: ["100094924471568"],
-			database: { type: "sqlite" },
+			adminBot: ["1234567890"],
+			database: { type: "json" },
 			dashBoard: { port: 5000, expireVerifyCode: 300 }
 		};
 	}
-	try {
-		configCommands = require(path.join(process.cwd(), "configCommands.json"));
-	} catch (_) {
-		configCommands = { envEvents: { welcome: {}, leave: {} } };
-	}
 	global.GoatBot = {
 		config,
-		configCommands,
+		configCommands: {},
 		commands: new Map()
 	};
 }
 
 if (!global.utils) {
+	let goatUtils = {};
 	try {
-		global.utils = require(path.join(process.cwd(), "utils.js"));
-	} catch (_) {
-		global.utils = {
-			getText: () => "",
-			log: {
-				info: console.log,
-				warn: console.warn,
-				err: console.error,
-				error: console.error
-			},
-			convertTime: (ms) => `${Math.floor(ms / 1000)}s`,
-			convertBytes: (bytes) => `${(bytes / 1024 / 1024).toFixed(2)} MB`,
-			randomString: (len = 16) => Math.random().toString(36).substring(2, 2 + len)
-		};
-	}
+		goatUtils = require(path.join(process.cwd(), "src/utils/goatUtils.js"));
+	} catch (_) {}
+	global.utils = {
+		getText: () => "",
+		log: {
+			info: console.log,
+			warn: console.warn,
+			err: console.error,
+			error: console.error
+		},
+		convertTime: goatUtils.convertTime || ((ms) => `${Math.floor(ms / 1000)}s`),
+		convertBytes: (bytes) => `${(bytes / 1024 / 1024).toFixed(2)} MB`,
+		randomString: goatUtils.randomString || ((len = 16) => Math.random().toString(36).substring(2, 2 + len)),
+		...goatUtils
+	};
 }
 
 if (!global.client) {
@@ -93,7 +88,7 @@ module.exports = async (req, res) => {
 		console.error("Vercel Serverless Error:", err);
 		res.status(500).json({
 			status: "error",
-			message: "Floppa-Chatbot Serverless Dashboard Error",
+			message: "Goat Bot V2 Serverless Dashboard Error",
 			details: err.message
 		});
 	}

@@ -24,6 +24,8 @@ sessions/
 *.session
 account.txt
 account.txt2
+acc.txt
+wa_web.json
 accounts.json
 appstate.json
 cookies.json

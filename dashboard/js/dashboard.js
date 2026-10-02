@@ -30,7 +30,7 @@ function switchTab(name) {
         $$('.nav-link[data-tab]').forEach(l => l.classList.toggle('active', l.dataset.tab === name));
         $('#crumbHere').textContent = ({
                 overview: 'Overview', files: 'Files', console: 'Console',
-                stai: 'STAI', config: 'Config', cookies: 'Cookies', scripts: 'Scripts', fca: 'FCA'
+                stai: 'STAI', config: 'Config', cookies: 'WA Web Token', scripts: 'Scripts', fca: 'FCA'
         })[name] || 'Dashboard';
         // close mobile sidebar
         $('#sidebar')?.classList.remove('open');
@@ -356,21 +356,25 @@ async function saveConfig() {
         catch (e) { toast('Save failed', e.message, 'err'); }
 }
 
-/* ---------- Cookies ---------- */
+/* ---------- WA Web Access Token & Session ---------- */
 async function loadCookies() {
-        try { const r = await api('/api/file/account.txt'); $('#cookieEditor').value = r.content; }
-        catch (e) { toast('Load failed', e.message, 'err'); }
+        try {
+                let r;
+                try { r = await api('/api/file/wa_web.json'); }
+                catch (_) { r = await api('/api/file/account.txt'); }
+                $('#cookieEditor').value = r.content || '';
+        } catch (e) { toast('Load failed', e.message, 'err'); }
 }
 async function saveCookies(restart) {
         try {
                 await api('/update-cookie', { method: 'POST', body: { cookieData: $('#cookieEditor').value, restartBot: !!restart } });
-                toast('Saved', restart ? 'Cookies updated, bot will restart' : 'Cookies updated', 'ok');
+                toast('Saved', restart ? 'Session token updated, bot will restart' : 'Session token updated', 'ok');
         } catch (e) { toast('Save failed', e.message, 'err'); }
 }
 async function clearCookies() {
-        const ok = await confirmModal('Clear cookies & restart?', 'The bot will restart and try to log in again using config.json credentials.', 'Clear & Restart');
+        const ok = await confirmModal('Clear session token & restart?', 'The bot will restart and generate a new QR code or pairing code.', 'Clear & Restart');
         if (!ok) return;
-        try { await api('/api/clear-cookies-restart', { method: 'POST' }); toast('Cleared', 'Bot is restarting…', 'warn'); }
+        try { await api('/api/clear-cookies-restart', { method: 'POST' }); toast('Cleared', 'Session cleared, bot is restarting…', 'warn'); }
         catch (e) { toast('Failed', e.message, 'err'); }
 }
 

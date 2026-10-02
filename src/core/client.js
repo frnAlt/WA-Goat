@@ -19,6 +19,11 @@ const qrcode = require('qrcode-terminal');
 const config = require('../config');
 const logger = require('../utils/logger');
 const { decodeJid } = require('../utils/myfunc');
+const {
+  restoreWaWebSession,
+  exportWaWebToken,
+  applyWaWebToken
+} = require('../utils/waWebAuth');
 
 class WhatsAppClient {
   constructor() {
@@ -33,6 +38,17 @@ class WhatsAppClient {
   async connect() {
     const sessionDir = path.resolve(process.cwd(), config.sessionPath);
     await fs.ensureDir(sessionDir);
+
+    // Auto-restore credentials from wa_web_access_token / wa_web.json / account.txt
+    const restoreResult = await restoreWaWebSession(sessionDir, {
+      configToken: config.waWebAccessToken
+    });
+    if (restoreResult.restored) {
+      logger.info(`[AUTH] Credentials restored from ${restoreResult.source}`);
+      if (restoreResult.me?.id) {
+        logger.info(`[AUTH] Logged-in profile: ${restoreResult.me.name || 'Bot'} (${restoreResult.me.id})`);
+      }
+    }
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
     this.state = state;
@@ -119,6 +135,13 @@ class WhatsAppClient {
         this.isReconnecting = false;
         logger.info('WhatsApp Connected Successfully!');
         logger.master('LOGIN', `Logged in as: ${this.sock.user?.name || 'Bot'} (${this.sock.user?.id})`);
+
+        // Automatically sync active session to wa_web.json and account.txt
+        exportWaWebToken(path.resolve(process.cwd(), config.sessionPath)).then((res) => {
+          if (res?.token) {
+            logger.info('[AUTH] Active wa_web_access_token synced to wa_web.json ✓');
+          }
+        }).catch(() => {});
       }
 
       if (connection === 'close') {
@@ -149,6 +172,16 @@ class WhatsAppClient {
         }
       }
     });
+  }
+
+  async getWaWebToken() {
+    const sessionDir = path.resolve(process.cwd(), config.sessionPath);
+    return exportWaWebToken(sessionDir);
+  }
+
+  async setWaWebToken(token) {
+    const sessionDir = path.resolve(process.cwd(), config.sessionPath);
+    return applyWaWebToken(token, sessionDir);
   }
 
   getSocket() {

@@ -22,23 +22,7 @@ class CommandManager {
       onReaction: new Map()
     };
     if (!global.utils) {
-      Object.defineProperty(global, 'utils', {
-        get() {
-          if (!this._utilsInstance) {
-            try {
-              this._utilsInstance = require('../../utils.js');
-            } catch (_) {
-              this._utilsInstance = {};
-            }
-          }
-          return this._utilsInstance;
-        },
-        set(val) {
-          this._utilsInstance = val;
-        },
-        configurable: true,
-        enumerable: true
-      });
+      global.utils = require('../utils/goatUtils');
     }
   }
 

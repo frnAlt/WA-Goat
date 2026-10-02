@@ -154,26 +154,23 @@ Type: !help <command> for details
 
 ---
 
-## 🚀 Multi-Runner Ecosystem
+## 🚀 Running the Bot
 
-WA-Goat provides flexible entrypoints for different workflows:
+WA-Goat provides simple npm commands:
 
 ```bash
-# 1. Standard Production Start (Baileys v7 + WCA + Web Dashboard)
+# 1. Standard Production Start (Baileys v7 + Floppa-WCA + Web Dashboard)
 npm start
 # OR: node src/index.js
 
-# 2. ST Bot Runner (WCA Native CLI with 7 startup steps)
-npm run st
-# OR: node ST.js
+# 2. Development Mode with Auto-Reload
+npm run dev
 
-# 3. Goat Bot Classic Runner
-npm run goat
-# OR: node Goat.js
+# 3. Quality & Syntax Diagnostic Suite
+npm run check
 
-# 4. Floppa Bot Backward-Compatible Runner
-npm run floppa
-# OR: node Floppa.js
+# 4. Automated Unit Test Suite
+npm test
 ```
 
 ---

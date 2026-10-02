@@ -29,6 +29,7 @@ module.exports = {
   sessionPath: './auth',
   pairingCode: false,
   pairingNumber: '',
+  waWebAccessToken: '',
 
   // Database
   database: {

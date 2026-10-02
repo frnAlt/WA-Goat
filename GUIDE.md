@@ -11,9 +11,8 @@ Welcome to the official setup, configuration, and developer guide for **WA-Goat*
 3. [WhatsApp Authentication & Login Modes](#3-whatsapp-authentication--login-modes)
 4. [Configuration Files Reference](#4-configuration-files-reference)
    - [config.json](#configjson)
-   - [configCommands.json](#configcommandsjson)
    - [.env](#env)
-5. [Multi-Runner System](#5-multi-runner-system)
+5. [Running the Bot](#5-running-the-bot)
 6. [Interactive Web Dashboard](#6-interactive-web-dashboard)
 7. [Writing Custom Commands](#7-writing-custom-commands)
    - [Classic GoatBot V2 Format](#classic-goatbot-v2-format)
@@ -200,30 +199,6 @@ Main runtime configuration:
 }
 ```
 
-### `configCommands.json`
-Controls per-command environmental options and unloads:
-
-```json
-{
-  "commandUnload": [],
-  "commandEventUnload": [],
-  "commandAllowLoad": [],
-  "commandBanned": {},
-  "envGlobal": {
-    "weatherApiKey": "d7e795ae6a0d44aaa8abb1a0a7ac19e4",
-    "goatbotApikey": ""
-  },
-  "envCommands": {
-    "daily": {
-      "rewardDay1": { "coin": 100, "exp": 10 }
-    }
-  },
-  "envEvents": {
-    "logsbot": { "allow": true }
-  }
-}
-```
-
 ### `.env`
 Environment variable overrides (useful for Docker and cloud deployments):
 
@@ -255,36 +230,22 @@ WEATHER_API_KEY="d7e795ae6a0d44aaa8abb1a0a7ac19e4"
 
 ---
 
-## 5. Multi-Runner System
+## 5. Running the Bot
 
-WA-Goat supports multiple runners to suit your preferred environment:
+WA-Goat provides standard npm commands for running and testing:
 
-### Runner 1: Main Autonomous Engine (`npm start`)
-Runs the unified Baileys v7 + WCA bridge + Web Dashboard + 290+ commands.
 ```bash
+# Production start (Baileys v7 + Floppa-WCA + Web Dashboard)
 npm start
-# Equivalent to: node src/index.js
-```
 
-### Runner 2: ST Bot WCA Native CLI (`npm run st`)
-Runs the ST 7-step startup sequence with colorful CLI badges and direct WCA connection:
-```bash
-npm run st
-# Equivalent to: node ST.js
-```
+# Development with automatic file watching and reload
+npm run dev
 
-### Runner 3: Goat Bot Classic Runner (`npm run goat`)
-Standard entrypoint mirroring classic GoatBot V2:
-```bash
-npm run goat
-# Equivalent to: node Goat.js
-```
+# Run codebase syntax and quality verification
+npm run check
 
-### Runner 4: Floppa Bot Runner (`npm run floppa`)
-Backward-compatible entrypoint for Floppa-Chatbot scripts:
-```bash
-npm run floppa
-# Equivalent to: node Floppa.js
+# Run automated unit test suite
+npm test
 ```
 
 ---

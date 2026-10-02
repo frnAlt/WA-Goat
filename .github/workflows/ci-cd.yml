@@ -55,7 +55,7 @@ jobs:
       - name: Core System Syntax Verification
         if: ${{ inputs.run_syntax_checks != false }}
         run: |
-          node --check index.js Floppa.js Goat.js utils.js
+          node --check index.js
           node --check src/index.js src/config/index.js
           node --check src/core/client.js src/core/command.js src/core/events.js src/core/message.js src/core/permissions.js
 

@@ -46,7 +46,7 @@
                 </a>
                 <a class="nav-link" data-tab="cookies">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-7.6-4.7 8.38 8.38 0 0 1 .9-9.7 8.5 8.5 0 0 1 9.4-2.3"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="9" r="1"/><circle cx="15" cy="15" r="1"/></svg>
-                        Cookies
+                        WA Web Token
                 </a>
                 <a class="nav-link" data-tab="scripts">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -285,12 +285,12 @@
                         </div>
                 </section>
 
-                <!-- ===== Cookies ===== -->
+                <!-- ===== WhatsApp Web Token & Session ===== -->
                 <section class="tab-panel" data-panel="cookies">
                         <div class="page-header">
                                 <div>
-                                        <h1 class="page-title">Cookies</h1>
-                                        <p class="page-subtitle">Manage Facebook session cookies stored in <code>account.txt</code>.</p>
+                                        <h1 class="page-title">WhatsApp Web Token &amp; Session</h1>
+                                        <p class="page-subtitle">Manage WhatsApp Web access token &amp; session credentials stored in <code>wa_web.json</code> / <code>account.txt</code>.</p>
                                 </div>
                                 <div style="display:flex;gap:8px">
                                         <button class="btn btn-ghost" onclick="loadCookies()">Reload</button>
@@ -299,9 +299,9 @@
                                 </div>
                         </div>
                         <div class="card">
-                                <textarea class="code" id="cookieEditor" spellcheck="false" placeholder='[{"key":"c_user","value":"…"}, …]' style="height:55vh;border-radius:10px"></textarea>
+                                <textarea class="code" id="cookieEditor" spellcheck="false" placeholder='Paste your wa_web_access_token (e.g. WA_WEB~... or session JSON)...' style="height:55vh;border-radius:10px"></textarea>
                                 <div style="margin-top:10px;font-size:12px;color:var(--text-2)">
-                                        Tip: paste a JSON array of cookies. Required keys: <code>c_user</code>, <code>xs</code>.
+                                        Tip: Paste your <code>wa_web_access_token</code> (WA_WEB~...) or session JSON to authenticate immediately without scanning a QR code.
                                 </div>
                         </div>
                 </section>

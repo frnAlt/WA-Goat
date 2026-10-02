@@ -1,7 +1,6 @@
 const axios = require("axios");
 const { Jimp } = require("jimp");
-const { Readable } = require("stream");
-const { renderJailEffect, isCanvasAvailable } = require(require("path").resolve(process.cwd(), "func/canvasHelper.js"));
+const { renderJailEffect, isCanvasAvailable } = require("../../utils/canvasHelper");
 
 async function extractImageUrl(args, event, api) {
   if (global.utils && typeof global.utils.extractImageUrl === "function") {
