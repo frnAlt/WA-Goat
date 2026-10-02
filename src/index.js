@@ -6,6 +6,7 @@
  * Built with: Floppa-WCA Client Engine
  */
 
+require('./utils/moduleAliases');
 const path = require('path');
 const config = require('./config');
 const logger = require('./utils/logger');
@@ -40,6 +41,10 @@ async function main() {
       global.utils = require('./utils/goatUtils');
     }
   }
+
+  global.GoatBot = global.GoatBot || {};
+  global.GoatBot.config = global.GoatBot.config || config;
+  global.GoatBot.configCommands = global.GoatBot.configCommands || { commandUnload: [], commandEventUnload: [], commandAllowLoad: [] };
 
   // 2. Discover and Load Commands
   const commandsDir = path.resolve(__dirname, 'commands');

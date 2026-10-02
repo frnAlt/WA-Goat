@@ -76,5 +76,34 @@ module.exports = {
 			position.endsWith(')') ? position = position.slice(0, -1) : null;
 			console.log(`\x1b[36m${position} =>\x1b[0m`, ...args);
 		}
+	},
+	cmd: function (prefix, message) {
+		if (message === undefined) { message = prefix; prefix = "CMD"; }
+		console.log(`${getCurrentTime()} ${colors.magentaBright(`${characters} [CMD] ${prefix}:`)}`, message);
+	},
+	divider: function (label = "") {
+		const line = "─".repeat(50);
+		if (label) {
+			const padded = `──── ${label} `;
+			const rest = "─".repeat(Math.max(0, 52 - padded.length));
+			console.log(colors.gray(padded + rest));
+		} else {
+			console.log(colors.gray(line));
+		}
+	},
+	banner: function (lines = []) {
+		const width = 52;
+		const border = colors.cyanBright("╔" + "═".repeat(width) + "╗");
+		const empty  = colors.cyanBright("║" + " ".repeat(width) + "║");
+		const foot   = colors.cyanBright("╚" + "═".repeat(width) + "╝");
+		console.log(border);
+		for (const line of lines) {
+			const pad = Math.max(0, width - line.length);
+			const left = Math.floor(pad / 2);
+			const right = pad - left;
+			console.log(colors.cyanBright("║") + " ".repeat(left) + line + " ".repeat(right) + colors.cyanBright("║"));
+		}
+		console.log(empty);
+		console.log(foot);
 	}
 };

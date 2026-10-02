@@ -112,7 +112,13 @@ class MediaService {
    */
   async detectType(buffer) {
     if (!buffer || !Buffer.isBuffer(buffer)) return null;
-    return await FileType.fromBuffer(buffer);
+    if (typeof FileType.fileTypeFromBuffer === 'function') {
+      return await FileType.fileTypeFromBuffer(buffer);
+    }
+    if (typeof FileType.fromBuffer === 'function') {
+      return await FileType.fromBuffer(buffer);
+    }
+    return null;
   }
 }
 

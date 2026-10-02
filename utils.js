@@ -3,6 +3,8 @@ const fs = require("fs-extra");
 const path = require("path");
 const cheerio = require("cheerio");
 const https = require("https");
+const http = require("http");
+const { Readable } = require("stream");
 const agent = new https.Agent({
         rejectUnauthorized: false
 });
@@ -1116,6 +1118,7 @@ function extractImageUrlFromAttachment(att) {
         if (!att || typeof att !== "object") return null;
         return (
                 att.url ||
+                att.path ||
                 att.largePreviewUrl ||
                 att.large_preview_url ||
                 att.previewUrl ||
@@ -1209,6 +1212,254 @@ async function extractImageUrlAsync(event, args = [], api = null, options = {}) 
         return null;
 }
 
+function getMessageReply(event) {
+        return (event && (event.messageReply || event.replyToMessage)) || null;
+}
+
+function getBase64FromUrl(url) {
+        return new Promise((resolve, reject) => {
+                const proto = url.startsWith("https") ? https : http;
+                proto.get(url, (res) => {
+                        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                                return resolve(getBase64FromUrl(res.headers.location));
+                        }
+                        const chunks = [];
+                        res.on("data", (chunk) => chunks.push(chunk));
+                        res.on("end", () => resolve(Buffer.concat(chunks).toString("base64")));
+                        res.on("error", reject);
+                }).on("error", reject);
+        });
+}
+
+function extFromMime(mime) {
+        if (!mime) return "bin";
+        const map = {
+                "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif",
+                "video/mp4": "mp4", "video/webm": "webm",
+                "audio/ogg": "ogg", "audio/mp4": "m4a", "audio/mpeg": "mp3",
+                "application/pdf": "pdf",
+        };
+        return map[mime.split(";")[0].trim()] || "bin";
+}
+
+async function getAttachmentStream({ event, type, url, api } = {}) {
+        const replied = getMessageReply(event);
+        if (replied && replied.attachments) {
+                const filter = type ? [type] : ["image", "photo", "video", "audio", "ptt", "document", "sticker"];
+                const att = replied.attachments.find(a => filter.includes(a.type));
+                if (att && att.url) {
+                        const stream = await getStreamFromURL(att.url);
+                        return { stream, mimetype: att.mimetype || "application/octet-stream", ext: extFromMime(att.mimetype) };
+                }
+                if (att && att.path && fs.existsSync(att.path)) {
+                        const stream = fs.createReadStream(att.path);
+                        return { stream, mimetype: att.mimetype || "application/octet-stream", ext: extFromMime(att.mimetype) };
+                }
+                if (att && (api?.downloadMedia || global.floppaWca?.downloadMedia)) {
+                        try {
+                                const downloader = api?.downloadMedia || global.floppaWca?.downloadMedia;
+                                const buf = await downloader(replied.raw || replied);
+                                const stream = Readable.from(buf);
+                                return { stream, mimetype: att.mimetype || "application/octet-stream", ext: extFromMime(att.mimetype) };
+                        } catch (_) {}
+                }
+        }
+        if (event && event.attachments && event.attachments.length > 0) {
+                const filter = type ? [type] : ["image", "photo", "video", "audio", "ptt", "document", "sticker"];
+                const att = event.attachments.find(a => filter.includes(a.type));
+                if (att && att.url) {
+                        const stream = await getStreamFromURL(att.url);
+                        return { stream, mimetype: att.mimetype || "application/octet-stream", ext: extFromMime(att.mimetype) };
+                }
+                if (att && att.path && fs.existsSync(att.path)) {
+                        const stream = fs.createReadStream(att.path);
+                        return { stream, mimetype: att.mimetype || "application/octet-stream", ext: extFromMime(att.mimetype) };
+                }
+        }
+        if (url) {
+                const stream = await getStreamFromURL(url);
+                return { stream, mimetype: "application/octet-stream", ext: "bin" };
+        }
+        return null;
+}
+
+function getTargetUser(event, args = []) {
+        const replied = getMessageReply(event);
+        if (event?.mentions) {
+                if (Array.isArray(event.mentions) && event.mentions.length > 0) {
+                        return event.mentions[0];
+                }
+                if (typeof event.mentions === 'object' && Object.keys(event.mentions).length > 0) {
+                        return Object.keys(event.mentions)[0];
+                }
+        }
+        if (replied && (replied.senderID || replied.sender || replied.userID)) {
+                return replied.senderID || replied.sender || replied.userID;
+        }
+        if (args && args[0]) {
+                const candidate = String(args[0]).replace('@', '').trim();
+                if (/^\d{7,}$/.test(candidate)) return candidate + '@s.whatsapp.net';
+                if (candidate.includes('@s.whatsapp.net') || candidate.includes('@g.us')) return candidate;
+        }
+        return event?.senderID || event?.sender || '';
+}
+
+async function getAvatar(api, uid) {
+        try {
+                const targetApi = api || global.floppaWca || global.wcaApi || global.api || global.ST?.api;
+                if (targetApi && typeof targetApi.getProfilePicture === 'function') {
+                        return await targetApi.getProfilePicture(uid);
+                }
+        } catch (_) {}
+        return null;
+}
+
+function normalizeContent(msgOrObj) {
+        if (typeof msgOrObj === "string") return { body: msgOrObj };
+        if (msgOrObj && typeof msgOrObj === "object") {
+                if (msgOrObj.body || msgOrObj.text || msgOrObj.attachment || msgOrObj.location || msgOrObj.sticker) {
+                        return msgOrObj;
+                }
+        }
+        return msgOrObj || { body: "" };
+}
+
+function buildMessage(api, event) {
+        const threadID = event?.threadID || event?.chat;
+        const rawMsg = event?.raw || null;
+
+        return {
+                async reply(msgOrObj, cb) {
+                        const content = normalizeContent(msgOrObj);
+                        const opts = rawMsg ? { replyToMessage: rawMsg } : {};
+                        const targetApi = api || global.floppaWca || global.wcaApi || global.api;
+                        const sent = await targetApi.sendMessage(content, threadID, opts).catch((e) => { if (cb) cb(e, null); throw e; });
+
+                        const info = {
+                                messageID: sent?.key?.id || sent?.id || (Array.isArray(sent) && sent[0]?.key?.id) || null,
+                                threadID,
+                                sent,
+                        };
+
+                        if (typeof cb === "function") cb(null, info);
+                        return info;
+                },
+
+                async send(msgOrObj, tid, cb) {
+                        if (typeof tid === "function") { cb = tid; tid = null; }
+                        tid = tid || threadID;
+                        const content = normalizeContent(msgOrObj);
+                        const targetApi = api || global.floppaWca || global.wcaApi || global.api;
+                        const sent = await targetApi.sendMessage(content, tid).catch((e) => { if (cb) cb(e, null); throw e; });
+                        const info = { messageID: sent?.key?.id || null, threadID: tid, sent };
+                        if (typeof cb === "function") cb(null, info);
+                        return info;
+                },
+
+                async react(emoji, msgID) {
+                        try {
+                                const targetID = msgID || event?.messageID;
+                                const key = { remoteJid: threadID, id: targetID, fromMe: false };
+                                const targetApi = api || global.floppaWca || global.wcaApi || global.api;
+                                return await targetApi.reactToMessage(threadID, key, emoji);
+                        } catch (_) {}
+                },
+
+                async unsend(msgID) {
+                        try {
+                                const id = msgID || event?.messageID;
+                                const key = { remoteJid: threadID, id, fromMe: true };
+                                const targetApi = api || global.floppaWca || global.wcaApi || global.api;
+                                return await targetApi.deleteMessage(threadID, key, true);
+                        } catch (_) {}
+                },
+
+                async edit(msgID, newText) {
+                        try {
+                                const targetApi = api || global.floppaWca || global.wcaApi || global.api;
+                                return await targetApi.editMessage(threadID, msgID, newText);
+                        } catch (_) {}
+                },
+
+                async typing(tid) {
+                        try {
+                                const targetApi = api || global.floppaWca || global.wcaApi || global.api;
+                                return await targetApi.sendTypingIndicator(tid || threadID, 3000);
+                        } catch (_) {}
+                },
+        };
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function ensureDir(dir) {
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function jidToPhone(jid) {
+        if (!jid) return "";
+        return String(jid).split("@")[0].split(":")[0];
+}
+
+function humanDuration(ms) {
+        const s = Math.floor(ms / 1000);
+        const m = Math.floor(s / 60);
+        const h = Math.floor(m / 60);
+        if (h > 0) return `${h}h ${m % 60}m ${s % 60}s`;
+        if (m > 0) return `${m}m ${s % 60}s`;
+        return `${s}s`;
+}
+
+async function resolveUserDisplayName(api, uid, userData) {
+        const raw = String(uid || "");
+        if (!raw) return "";
+
+        const bare = raw.split(":")[0].split("@")[0];
+        const candidates = Array.from(new Set([
+                raw,
+                bare,
+                bare ? bare + "@s.whatsapp.net" : "",
+                bare ? bare + "@lid" : "",
+        ].filter(Boolean)));
+
+        const getUser = userData || (global.ST && global.ST.DB && global.ST.DB.userData) || (global.userData);
+        if (typeof getUser === "function") {
+                for (const key of candidates) {
+                        try {
+                                const u = await getUser(key);
+                                if (u && u.name && u.name !== "Unknown") return u.name;
+                        } catch (_) {}
+                }
+        } else if (getUser && typeof getUser.getName === "function") {
+                try {
+                        const name = await getUser.getName(bare);
+                        if (name && name !== "Unknown User") return name;
+                } catch (_) {}
+        }
+
+        const sock = (api && api.sock) || (global.ST && global.ST.api && global.ST.api.sock) || (global.floppaWca && global.floppaWca.sock);
+        const contacts = (sock && (sock.contacts || (sock.store && sock.store.contacts))) || {};
+        for (const key of candidates) {
+                const contact = contacts[key];
+                const name = contact?.name || contact?.notify || contact?.verifiedName || contact?.pushName;
+                if (name) return name;
+        }
+        for (const [contactJid, contact] of Object.entries(contacts)) {
+                if (
+                        contactJid === raw ||
+                        contactJid === bare ||
+                        contactJid.split(":")[0].split("@")[0] === bare ||
+                        contact?.id === raw ||
+                        contact?.lid === raw
+                ) {
+                        const name = contact?.name || contact?.notify || contact?.verifiedName || contact?.pushName;
+                        if (name) return name;
+                }
+        }
+
+        return bare || raw;
+}
+
 const utils = {
         CustomError,
         TaskQueue,
@@ -1250,6 +1501,19 @@ const utils = {
         getStreamsFromAttachment,
         getStreamFromURL,
         getStreamFromUrl: getStreamFromURL,
+        getBase64FromUrl,
+        getMessageReply,
+        extFromMime,
+        getAttachmentStream,
+        getTargetUser,
+        getAvatar,
+        buildMessage,
+        normalizeContent,
+        sleep,
+        ensureDir,
+        jidToPhone,
+        humanDuration,
+        resolveUserDisplayName,
         Prism,
         translate,
         shortenURL,
@@ -1286,6 +1550,25 @@ const utils = {
         })(),
         ...require("./func")
 };
+
+// Direct globals for zero-import script compatibility
+if (typeof global.getTargetUser === 'undefined') global.getTargetUser = getTargetUser;
+if (typeof global.getMessageReply === 'undefined') global.getMessageReply = getMessageReply;
+if (typeof global.resolveUserDisplayName === 'undefined') global.resolveUserDisplayName = resolveUserDisplayName;
+if (typeof global.jidToPhone === 'undefined') global.jidToPhone = jidToPhone;
+if (typeof global.getAvatar === 'undefined') global.getAvatar = getAvatar;
+if (typeof global.buildMessage === 'undefined') global.buildMessage = buildMessage;
+if (typeof global.getStreamFromUrl === 'undefined') global.getStreamFromUrl = getStreamFromURL;
+if (typeof global.getBase64FromUrl === 'undefined') global.getBase64FromUrl = getBase64FromUrl;
+if (typeof global.downloadFile === 'undefined') global.downloadFile = downloadFile;
+if (typeof global.getAttachmentStream === 'undefined') global.getAttachmentStream = getAttachmentStream;
+if (typeof global.humanDuration === 'undefined') global.humanDuration = humanDuration;
+if (typeof global.sleep === 'undefined') global.sleep = sleep;
+if (typeof global.ensureDir === 'undefined') global.ensureDir = ensureDir;
+if (typeof global.normalizeContent === 'undefined') global.normalizeContent = normalizeContent;
+if (typeof global.extFromMime === 'undefined') global.extFromMime = extFromMime;
+if (typeof global.extractImageUrl === 'undefined') global.extractImageUrl = extractImageUrl;
+if (typeof global.extractImageUrlAsync === 'undefined') global.extractImageUrlAsync = extractImageUrlAsync;
 
 global.utils = utils;
 module.exports = utils;

@@ -101,6 +101,69 @@ class UsersData {
   subtractMoney(userID, amount) {
     return this.addMoney(userID, -amount);
   }
+
+  async getName(userID) {
+    const id = normalizeId(userID);
+    if (!id) return 'Unknown User';
+
+    const user = this.users[id];
+    if (user && user.name && user.name !== 'Unknown' && !user.name.startsWith('User ')) {
+      return user.name;
+    }
+
+    try {
+      const sock = global.floppaWca?.sock || global.wcaApi?.sock || global.api?.sock || global.ST?.api?.sock;
+      if (sock) {
+        const jid = `${id}@s.whatsapp.net`;
+        const contacts = sock.contacts || (sock.store && sock.store.contacts) || {};
+        const contact = contacts[jid] || contacts[id];
+        const name = contact?.name || contact?.notify || contact?.verifiedName || contact?.pushName;
+        if (name) {
+          if (user) {
+            user.name = name;
+            this.save();
+          }
+          return name;
+        }
+      }
+    } catch (_) {}
+
+    return user?.name || `User ${id}`;
+  }
+
+  async getAvatarUrl(userID) {
+    const id = normalizeId(userID);
+    if (!id) return null;
+
+    const jid = id.includes('@') ? id : `${id}@s.whatsapp.net`;
+
+    try {
+      const api = global.floppaWca || global.wcaApi || global.api || global.ST?.api;
+      if (api && typeof api.getProfilePicture === 'function') {
+        const pic = await api.getProfilePicture(jid);
+        if (pic) return pic;
+      }
+    } catch (_) {}
+
+    try {
+      const sock = global.floppaWca?.sock || global.wcaApi?.sock || global.api?.sock || global.ST?.api?.sock;
+      if (sock && typeof sock.profilePictureUrl === 'function') {
+        const pic = await sock.profilePictureUrl(jid, 'image');
+        if (pic) return pic;
+      }
+    } catch (_) {}
+
+    const displayName = this.get(id, 'name', id);
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random&size=720`;
+  }
+
+  getItem(userID) {
+    return this.get(userID);
+  }
+
+  getAllCache() {
+    return this.getAll();
+  }
 }
 
 module.exports = UsersData;

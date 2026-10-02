@@ -1,5 +1,17 @@
-const itunes = require("searchitunes");
-const { getStreamFromURL } = global.utils;
+const axios = require("axios");
+const itunes = async (opts) => {
+	const res = await axios.get("https://itunes.apple.com/search", {
+		params: {
+			term: opts.term,
+			entity: opts.entity || "software",
+			country: opts.country || "VN",
+			limit: opts.limit || 3
+		},
+		timeout: 10000
+	});
+	return res.data;
+};
+const { getStreamFromURL } = global.utils || {};
 
 module.exports = {
 	config: {

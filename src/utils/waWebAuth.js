@@ -92,7 +92,7 @@ function encodeWaWebToken(creds, keys = null) {
 /**
  * Apply token / credentials to session directory (auth/creds.json)
  */
-async function applyWaWebToken(tokenOrContent, sessionDir) {
+async function applyWaWebToken(tokenOrContent, sessionDir, options = {}) {
   const parsed = parseWaWebToken(tokenOrContent);
   if (!parsed || !parsed.creds) {
     return {
@@ -119,24 +119,26 @@ async function applyWaWebToken(tokenOrContent, sessionDir) {
   const token = encodeWaWebToken(parsed.creds, parsed.keys);
 
   // Sync wa_web.json in project root
-  try {
-    const waWebPath = path.resolve(process.cwd(), 'wa_web.json');
-    const waWebData = {
-      wa_web_access_token: token,
-      platform: parsed.creds.platform || 'whatsapp-web',
-      registered: Boolean(parsed.creds.registered),
-      me: parsed.creds.me || null,
-      updatedAt: new Date().toISOString(),
-      creds: parsed.creds
-    };
-    await fs.writeJson(waWebPath, waWebData, { spaces: 2, replacer: BufferJSON.replacer });
-  } catch (_) {}
+  if (options.syncRootFiles !== false) {
+    try {
+      const waWebPath = path.resolve(process.cwd(), 'wa_web.json');
+      const waWebData = {
+        wa_web_access_token: token,
+        platform: parsed.creds.platform || 'whatsapp-web',
+        registered: Boolean(parsed.creds.registered),
+        me: parsed.creds.me || null,
+        updatedAt: new Date().toISOString(),
+        creds: parsed.creds
+      };
+      await fs.writeJson(waWebPath, waWebData, { spaces: 2, replacer: BufferJSON.replacer });
+    } catch (_) {}
 
-  // Sync account.txt for Floppa bot backward compatibility
-  try {
-    const accPath = path.resolve(process.cwd(), 'account.txt');
-    await fs.writeFile(accPath, token, 'utf8');
-  } catch (_) {}
+    // Sync account.txt for Floppa bot backward compatibility
+    try {
+      const accPath = path.resolve(process.cwd(), 'account.txt');
+      await fs.writeFile(accPath, token, 'utf8');
+    } catch (_) {}
+  }
 
   return {
     success: true,
@@ -189,7 +191,7 @@ async function restoreWaWebSession(sessionDir, options = {}) {
     }
 
     if (rawContent && typeof rawContent === 'string' && rawContent.trim().length > 10) {
-      const res = await applyWaWebToken(rawContent, sessionDir);
+      const res = await applyWaWebToken(rawContent, sessionDir, { syncRootFiles: options.syncRootFiles !== false });
       if (res.success) {
         return {
           restored: true,
@@ -207,7 +209,7 @@ async function restoreWaWebSession(sessionDir, options = {}) {
 /**
  * Export current active session in sessionDir to wa_web.json and account.txt
  */
-async function exportWaWebToken(sessionDir) {
+async function exportWaWebToken(sessionDir, options = {}) {
   try {
     const credsPath = path.join(sessionDir, 'creds.json');
     if (!await fs.pathExists(credsPath)) return null;
@@ -218,21 +220,26 @@ async function exportWaWebToken(sessionDir) {
 
     const token = encodeWaWebToken(creds);
 
-    // Save wa_web.json
-    const waWebPath = path.resolve(process.cwd(), 'wa_web.json');
-    const waWebData = {
-      wa_web_access_token: token,
-      platform: creds.platform || 'whatsapp-web',
-      registered: Boolean(creds.registered),
-      me: creds.me || null,
-      updatedAt: new Date().toISOString(),
-      creds
-    };
-    await fs.writeJson(waWebPath, waWebData, { spaces: 2, replacer: BufferJSON.replacer });
+    let waWebPath = null;
+    let accPath = null;
 
-    // Save account.txt
-    const accPath = path.resolve(process.cwd(), 'account.txt');
-    await fs.writeFile(accPath, token, 'utf8');
+    if (options.syncRootFiles !== false) {
+      // Save wa_web.json
+      waWebPath = path.resolve(process.cwd(), 'wa_web.json');
+      const waWebData = {
+        wa_web_access_token: token,
+        platform: creds.platform || 'whatsapp-web',
+        registered: Boolean(creds.registered),
+        me: creds.me || null,
+        updatedAt: new Date().toISOString(),
+        creds
+      };
+      await fs.writeJson(waWebPath, waWebData, { spaces: 2, replacer: BufferJSON.replacer });
+
+      // Save account.txt
+      accPath = path.resolve(process.cwd(), 'account.txt');
+      await fs.writeFile(accPath, token, 'utf8');
+    }
 
     return {
       token,

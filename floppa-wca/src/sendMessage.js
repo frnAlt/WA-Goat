@@ -6,9 +6,46 @@ const utils = require("../utils");
  * Build a single Baileys content object from an attachment descriptor.
  */
 function attToContent(att, caption) {
+    if (!att) return null;
+
+    // Direct buffer
+    if (Buffer.isBuffer(att)) {
+        const isPng = att[0] === 0x89 && att[1] === 0x50;
+        const isJpg = att[0] === 0xFF && att[1] === 0xD8;
+        const isGif = att[0] === 0x47 && att[1] === 0x49;
+        const isWebp = att.length > 12 && att[8] === 0x57 && att[9] === 0x45 && att[10] === 0x42 && att[11] === 0x50;
+        const isMp4 = att.indexOf(Buffer.from('ftyp')) >= 0 && att.indexOf(Buffer.from('ftyp')) <= 16;
+        const isMp3 = (att[0] === 0x49 && att[1] === 0x44 && att[2] === 0x33) || (att[0] === 0xFF && (att[1] & 0xE0) === 0xE0);
+        const isOgg = att[0] === 0x4F && att[1] === 0x67 && att[2] === 0x67 && att[3] === 0x53;
+
+        if (isWebp) return { sticker: att };
+        if (isPng || isJpg || isGif) return { image: att, caption: caption || "" };
+        if (isMp4) return { video: att, caption: caption || "" };
+        if (isMp3 || isOgg) return { audio: att, mimetype: isOgg ? "audio/ogg; codecs=opus" : "audio/mp4", ptt: isOgg };
+        return { document: att, mimetype: "application/octet-stream", fileName: "file", caption: caption || "" };
+    }
+
+    // Direct stream
+    if (typeof att.pipe === "function") {
+        const ext = att.path ? String(att.path).toLowerCase() : "";
+        if (ext.endsWith(".mp4") || ext.endsWith(".mov") || ext.endsWith(".webm")) return { video: { stream: att }, caption: caption || "" };
+        if (ext.endsWith(".mp3") || ext.endsWith(".ogg") || ext.endsWith(".wav") || ext.endsWith(".m4a")) return { audio: { stream: att }, mimetype: "audio/mp4", ptt: false };
+        if (ext.endsWith(".webp")) return { sticker: { stream: att } };
+        return { image: { stream: att }, caption: caption || "" };
+    }
+
+    // Direct string (URL or path)
+    if (typeof att === "string") {
+        const lower = att.toLowerCase().split("?")[0];
+        if (lower.endsWith(".mp4") || lower.endsWith(".mov") || lower.endsWith(".webm")) return { video: { url: att }, caption: caption || "" };
+        if (lower.endsWith(".mp3") || lower.endsWith(".ogg") || lower.endsWith(".wav") || lower.endsWith(".m4a")) return { audio: { url: att }, mimetype: "audio/mp4", ptt: false };
+        if (lower.endsWith(".webp")) return { sticker: { url: att } };
+        return { image: { url: att }, caption: caption || "" };
+    }
+
     const src = att.url    ? { url: att.url }
               : att.buffer ? att.buffer
-              : att.stream ? { stream: att.stream }
+              : att.stream ? (typeof att.stream.pipe === "function" ? { stream: att.stream } : att.stream)
               : att.path   ? { url: att.path }
               : null;
     if (!src) return null;
@@ -23,7 +60,7 @@ function attToContent(att, caption) {
         return { document: src, mimetype: att.mimetype || "application/octet-stream", fileName: att.filename || att.name || "file", caption: caption || att.caption || "" };
     if (att.type === "sticker")
         return { sticker: src, mimetype: "image/webp", isAnimated: att.isAnimated || false };
-    return null;
+    return { image: src, caption: caption || "" };
 }
 
 /**

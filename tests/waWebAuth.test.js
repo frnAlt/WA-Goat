@@ -79,7 +79,7 @@ test('WhatsApp Web Access Token & Session Auth Suite', async (t) => {
       assert.strictEqual(await hasValidSession(tmpDir), false);
 
       const token = encodeWaWebToken(dummyCreds);
-      const applyRes = await applyWaWebToken(token, tmpDir);
+      const applyRes = await applyWaWebToken(token, tmpDir, { syncRootFiles: false });
 
       assert.strictEqual(applyRes.success, true);
       assert.ok(applyRes.token);
@@ -90,7 +90,7 @@ test('WhatsApp Web Access Token & Session Auth Suite', async (t) => {
       assert.strictEqual(await fs.pathExists(credsFile), true);
 
       // Test exportWaWebToken
-      const exported = await exportWaWebToken(tmpDir);
+      const exported = await exportWaWebToken(tmpDir, { syncRootFiles: false });
       assert.ok(exported);
       assert.ok(exported.token.startsWith('WA_WEB~'));
       assert.strictEqual(exported.creds.registrationId, 12345);
@@ -105,14 +105,14 @@ test('WhatsApp Web Access Token & Session Auth Suite', async (t) => {
 
     try {
       const token = encodeWaWebToken(dummyCreds);
-      const res = await restoreWaWebSession(tmpDir, { configToken: token, force: true });
+      const res = await restoreWaWebSession(tmpDir, { configToken: token, force: true, syncRootFiles: false });
 
       assert.strictEqual(res.restored, true);
       assert.strictEqual(res.source, 'config:waWebAccessToken');
       assert.strictEqual(res.me.id, '628123456789:1@s.whatsapp.net');
 
       // Repeated restore without force should detect existing session
-      const repeated = await restoreWaWebSession(tmpDir, { configToken: token, force: false });
+      const repeated = await restoreWaWebSession(tmpDir, { configToken: token, force: false, syncRootFiles: false });
       assert.strictEqual(repeated.restored, false);
       assert.strictEqual(repeated.reason, 'Valid active session already exists');
     } finally {
@@ -126,7 +126,7 @@ test('WhatsApp Web Access Token & Session Auth Suite', async (t) => {
 
     try {
       const token = encodeWaWebToken(dummyCreds);
-      await applyWaWebToken(token, tmpDir);
+      await applyWaWebToken(token, tmpDir, { syncRootFiles: false });
 
       const content = await readWaWebSessionContent(tmpDir);
       assert.ok(typeof content === 'string');

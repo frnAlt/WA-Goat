@@ -39,10 +39,18 @@ module.exports = {
 
 	onLoad: async function () {
 		if (!fs.existsSync(pathData)) {
-			const res = await axios.get('https://raw.githubusercontent.com/ntkhang03/Goat-Bot-V2/main/scripts/cmds/assets/hubble/nasa.json');
-			fs.writeFileSync(pathData, JSON.stringify(res.data, null, 2));
+			try {
+				const res = await axios.get('https://raw.githubusercontent.com/ntkhang03/Goat-Bot-V2/main/scripts/cmds/assets/hubble/nasa.json', { timeout: 5000 });
+				fs.writeFileSync(pathData, JSON.stringify(res.data, null, 2));
+			} catch (_) {
+				fs.writeFileSync(pathData, JSON.stringify({}, null, 2));
+			}
 		}
-		hubbleData = JSON.parse(fs.readFileSync(pathData));
+		try {
+			hubbleData = JSON.parse(fs.readFileSync(pathData));
+		} catch (_) {
+			hubbleData = {};
+		}
 	},
 
 	onStart: async function ({ message, args, getLang }) {

@@ -35,6 +35,55 @@ const database = {
   // Initialize DB subsystem
   async init() {
     logger.info('Database initialized (Storage:', config.database.type, ')');
+
+    // Wire up global.db, global.ST.DB, global.userData, global.threadsData
+    global.db = global.db || {};
+    if (!global.db.allUserData) {
+      Object.defineProperty(global.db, 'allUserData', {
+        get() {
+          try { return usersData.getAll(); } catch (_) { return []; }
+        },
+        set(val) {},
+        configurable: true,
+        enumerable: true
+      });
+    }
+    if (!global.db.allThreadData) {
+      Object.defineProperty(global.db, 'allThreadData', {
+        get() {
+          try { return threadsData.getAll(); } catch (_) { return []; }
+        },
+        set(val) {},
+        configurable: true,
+        enumerable: true
+      });
+    }
+    if (!global.db.allGlobalData) {
+      Object.defineProperty(global.db, 'allGlobalData', {
+        get() {
+          try { return globalData.getAll(); } catch (_) { return []; }
+        },
+        set(val) {},
+        configurable: true,
+        enumerable: true
+      });
+    }
+    global.db.usersData = usersData;
+    global.db.threadsData = threadsData;
+    global.db.globalData = globalData;
+
+    global.ST = global.ST || {};
+    global.ST.DB = global.ST.DB || {
+      userData: async (uid) => usersData.get(uid),
+      threadsData: async (tid) => threadsData.get(tid),
+      globalData: globalData,
+      users: usersData,
+      threads: threadsData,
+    };
+    global.userData = global.userData || global.ST.DB.userData;
+    global.threadsData = global.threadsData || global.ST.DB.threadsData;
+    global.usersData = global.usersData || usersData;
+
     return true;
   },
 

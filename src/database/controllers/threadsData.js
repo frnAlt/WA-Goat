@@ -37,6 +37,8 @@ class ThreadsData {
         banned: false,
         banReason: '',
         bannedAt: null,
+        adminIDs: defaultData.adminIDs || [],
+        members: defaultData.members || [],
         settings: {
           ...config.defaultGroupSettings,
           ...(defaultData.settings || {})
@@ -111,6 +113,71 @@ class ThreadsData {
     const updated = { ...current, ...newSettings };
     this.set(threadID, updated, 'settings');
     return updated;
+  }
+
+  async getName(threadID) {
+    const id = normalizeThreadId(threadID);
+    if (!id) return 'WhatsApp Group';
+    const thread = this.threads[id];
+    if (thread && thread.threadName && thread.threadName !== 'WhatsApp Group') {
+      return thread.threadName;
+    }
+    try {
+      const api = global.floppaWca || global.wcaApi || global.api || global.ST?.api;
+      if (api && typeof api.getThreadInfo === 'function') {
+        const info = await api.getThreadInfo(id);
+        if (info && (info.threadName || info.subject || info.name)) {
+          const name = info.threadName || info.subject || info.name;
+          if (thread) {
+            thread.threadName = name;
+            this.save();
+          }
+          return name;
+        }
+      }
+    } catch (_) {}
+    return thread?.threadName || 'WhatsApp Group';
+  }
+
+  getItem(threadID) {
+    return this.get(threadID);
+  }
+
+  getAllCache() {
+    return this.getAll();
+  }
+
+  async refreshInfo(threadID, info) {
+    if (!info) return null;
+    const id = normalizeThreadId(threadID);
+    const thread = this.threads[id] || this.create(id);
+    if (info.subject || info.name || info.threadName) {
+      thread.threadName = info.subject || info.name || info.threadName;
+    }
+    if (Array.isArray(info.adminIDs)) {
+      thread.adminIDs = info.adminIDs;
+    }
+    if (Array.isArray(info.participants) || Array.isArray(info.members)) {
+      const list = info.participants || info.members;
+      thread.members = list.map(p => {
+        const uid = typeof p === 'object' ? (p.id || p.userID || p.jid) : p;
+        return {
+          userID: uid ? String(uid).replace(/@.*$/, '') : '',
+          inGroup: true
+        };
+      });
+    }
+    thread.updatedAt = Date.now();
+    this.save();
+    return _.cloneDeep(thread);
+  }
+
+  async incrementMsgCount(threadID, userID) {
+    const id = normalizeThreadId(threadID);
+    const uId = String(userID || '').replace(/@.*$/, '');
+    const current = this.get(id, `data.memberMsgCount.${uId}`, 0);
+    this.set(id, current + 1, `data.memberMsgCount.${uId}`);
+    return current + 1;
   }
 }
 

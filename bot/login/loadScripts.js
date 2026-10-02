@@ -61,24 +61,28 @@ async function loadCommands(api) {
       continue;
     }
 
-    if (!mod || !mod.config || !mod.config.name) {
+    let realMod = mod?.default ? (typeof mod.default === "object" ? { ...mod.default } : mod.default) : (typeof mod === "object" ? { ...mod } : mod);
+    const cfg = realMod?.config || realMod?.meta || mod?.config || mod?.meta;
+    if (cfg && realMod && typeof realMod === "object") realMod.config = cfg;
+
+    if (!realMod || !realMod.config || !realMod.config.name) {
       log.warn("CMD LOAD", `${file} — missing config.name, skipping.`);
       failed++;
       continue;
     }
 
     // Run onLoad if defined
-    if (typeof mod.onLoad === "function") {
+    if (typeof realMod.onLoad === "function") {
       try {
-        await mod.onLoad({ api, threadsData: global.ST.DB.threads, userData: global.ST.DB.users });
+        await realMod.onLoad({ api, threadsData: global.ST.DB.threads, userData: global.ST.DB.users });
       } catch (e) {
         log.warn("CMD LOAD", `${file} onLoad error: ${e.message}`);
       }
     }
 
-    global.ST.cmds.set(mod.config.name.toLowerCase(), mod);
+    global.ST.cmds.set(realMod.config.name.toLowerCase(), realMod);
     loaded++;
-    spinner.update(`Loading commands (${loaded}/${files.length}) — ${mod.config.name}`);
+    spinner.update(`Loading commands (${loaded}/${files.length}) — ${realMod.config.name}`);
   }
 
   let cmdSuffix = "";
@@ -122,23 +126,27 @@ async function loadEvents(api) {
       continue;
     }
 
-    if (!mod || !mod.config || !mod.config.name) {
+    let realMod = mod?.default ? (typeof mod.default === "object" ? { ...mod.default } : mod.default) : (typeof mod === "object" ? { ...mod } : mod);
+    const cfg = realMod?.config || realMod?.meta || mod?.config || mod?.meta;
+    if (cfg && realMod && typeof realMod === "object") realMod.config = cfg;
+
+    if (!realMod || !realMod.config || !realMod.config.name) {
       log.warn("EVT LOAD", `${file} — missing config.name, skipping.`);
       failed++;
       continue;
     }
 
-    if (typeof mod.onLoad === "function") {
+    if (typeof realMod.onLoad === "function") {
       try {
-        await mod.onLoad({ api, threadsData: global.ST.DB.threads, userData: global.ST.DB.users });
+        await realMod.onLoad({ api, threadsData: global.ST.DB.threads, userData: global.ST.DB.users });
       } catch (e) {
         log.warn("EVT LOAD", `${file} onLoad error: ${e.message}`);
       }
     }
 
-    global.ST.events.set(mod.config.name.toLowerCase(), mod);
+    global.ST.events.set(realMod.config.name.toLowerCase(), realMod);
     loaded++;
-    spinner.update(`Loading events (${loaded}/${files.length}) — ${mod.config.name}`);
+    spinner.update(`Loading events (${loaded}/${files.length}) — ${realMod.config.name}`);
   }
 
   let evtSuffix = "";
@@ -169,12 +177,15 @@ async function loadCmd(cmdName, api) {
   if (!fs.existsSync(filePath)) throw new Error("Command file not found: " + file);
   const mod = safeRequire(filePath);
   if (mod && mod.__error) throw mod.__error;
-  if (!mod || !mod.config || !mod.config.name) throw new Error("Invalid command structure in: " + file);
-  if (typeof mod.onLoad === "function") {
-    await mod.onLoad({ api, threadsData: global.ST.DB.threads, userData: global.ST.DB.users }).catch(() => {});
+  let realMod = mod?.default ? (typeof mod.default === "object" ? { ...mod.default } : mod.default) : (typeof mod === "object" ? { ...mod } : mod);
+  const cfg = realMod?.config || realMod?.meta || mod?.config || mod?.meta;
+  if (cfg && realMod && typeof realMod === "object") realMod.config = cfg;
+  if (!realMod || !realMod.config || !realMod.config.name) throw new Error("Invalid command structure in: " + file);
+  if (typeof realMod.onLoad === "function") {
+    await realMod.onLoad({ api, threadsData: global.ST.DB.threads, userData: global.ST.DB.users }).catch(() => {});
   }
-  global.ST.cmds.set(mod.config.name.toLowerCase(), mod);
-  return mod;
+  global.ST.cmds.set(realMod.config.name.toLowerCase(), realMod);
+  return realMod;
 }
 
 /**
@@ -203,12 +214,15 @@ async function loadEvent(evtName, api) {
   if (!fs.existsSync(filePath)) throw new Error("Event file not found: " + file);
   const mod = safeRequire(filePath);
   if (mod && mod.__error) throw mod.__error;
-  if (!mod || !mod.config || !mod.config.name) throw new Error("Invalid event structure in: " + file);
-  if (typeof mod.onLoad === "function") {
-    await mod.onLoad({ api, threadsData: global.ST.DB.threads, userData: global.ST.DB.users }).catch(() => {});
+  let realMod = mod?.default ? (typeof mod.default === "object" ? { ...mod.default } : mod.default) : (typeof mod === "object" ? { ...mod } : mod);
+  const cfg = realMod?.config || realMod?.meta || mod?.config || mod?.meta;
+  if (cfg && realMod && typeof realMod === "object") realMod.config = cfg;
+  if (!realMod || !realMod.config || !realMod.config.name) throw new Error("Invalid event structure in: " + file);
+  if (typeof realMod.onLoad === "function") {
+    await realMod.onLoad({ api, threadsData: global.ST.DB.threads, userData: global.ST.DB.users }).catch(() => {});
   }
-  global.ST.events.set(mod.config.name.toLowerCase(), mod);
-  return mod;
+  global.ST.events.set(realMod.config.name.toLowerCase(), realMod);
+  return realMod;
 }
 
 /**

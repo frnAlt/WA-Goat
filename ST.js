@@ -1,5 +1,7 @@
 "use strict";
 
+require("./src/utils/moduleAliases");
+
 /**
  * @author frnAlt
  * Runner Entrypoint for Floppa-WCA
@@ -18,6 +20,13 @@ global.ST = {
   api:            null,
   DB:             null,
   io:             null,
+};
+
+global.GoatBot = global.GoatBot || {
+  get config() { return global.ST.config; },
+  get configCommands() { return global.ST.configCommands; },
+  commands: global.ST.cmds,
+  events: global.ST.events,
 };
 
 // ─── Globals: logger + utils ─────────────────────────────────────────────────
