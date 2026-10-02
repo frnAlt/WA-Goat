@@ -22,7 +22,11 @@ class CommandManager {
       onReaction: new Map()
     };
     if (!global.utils) {
-      global.utils = require('../utils/goatUtils');
+      try {
+        global.utils = require(path.resolve(process.cwd(), 'utils.js'));
+      } catch (_) {
+        global.utils = require('../utils/goatUtils');
+      }
     }
   }
 

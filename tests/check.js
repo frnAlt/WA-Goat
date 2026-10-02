@@ -37,6 +37,8 @@ checkDir(path.resolve(__dirname, '../src'));
 checkDir(path.resolve(__dirname, '../tests'));
 checkDir(path.resolve(__dirname, '../dashboard'));
 checkDir(path.resolve(__dirname, '../floppa-wca/src'));
+checkDir(path.resolve(__dirname, '../scripts'));
+checkDir(path.resolve(__dirname, '../func'));
 
 console.log(`✅ Checked ${totalFiles} JavaScript files.`);
 if (errors === 0) {
