@@ -18,14 +18,14 @@ module.exports = {
 			case "log:subscribe":
 				return async function () {
 					const { addedParticipants } = event.logMessageData;
-					const threadInfo_Fca = await api.getThreadInfo(threadID);
-					threadsData.refreshInfo(threadID, threadInfo_Fca);
+					const threadInfoWca = await api.getThreadInfo(threadID);
+					threadsData.refreshInfo(threadID, threadInfoWca);
 
 					for (const user of addedParticipants) {
-						let oldData = members.find(member => member.userID === user.userFbId);
+						let oldData = members.find(member => member.userID === (user.userFbId || user.id));
 						const isOldMember = oldData ? true : false;
 						oldData = oldData || {};
-						const { userInfo, nicknames } = threadInfo_Fca;
+						const { userInfo, nicknames } = threadInfoWca;
 
 						const newData = {
 							userID: user.userFbId,

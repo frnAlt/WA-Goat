@@ -17,19 +17,19 @@ module.exports = {
 			title: "🛡️ ═══ BÁO CÁO HOẠT ĐỘNG BOT ═══",
 			added: "\n✅ Bot vừa được thêm vào nhóm mới!\n👤 Người thêm: %1 (%2)",
 			kicked: "\n❌ Bot vừa bị kick khỏi nhóm!\n👤 Người thực hiện: %1 (%2)",
-			footer: "\n🏠 Nhóm: %1\n🆔 ID Nhóm: %2\n🔗 Profile: https://facebook.com/%3\n⏰ Thời gian: %4"
+			footer: "\n🏠 Nhóm: %1\n🆔 ID Nhóm: %2\n🔗 WhatsApp: https://wa.me/%3\n⏰ Thời gian: %4"
 		},
 		en: {
 			title: "🛡️ ═══ BOT AUDIT EVENT ═══",
 			added: "\n✅ Bot was added to a new group!\n👤 Added by: %1 (%2)",
 			kicked: "\n❌ Bot was removed from group!\n👤 Action by: %1 (%2)",
-			footer: "\n🏠 Group: %1\n🆔 Group ID: %2\n🔗 Profile: https://facebook.com/%3\n⏰ Timestamp: %4"
+			footer: "\n🏠 Group: %1\n🆔 Group ID: %2\n🔗 WhatsApp: https://wa.me/%3\n⏰ Timestamp: %4"
 		}
 	},
 
 	onStart: async ({ usersData, threadsData, event, api, getLang }) => {
 		const botID = String(api.getCurrentUserID());
-		const isBotAdded = event.logMessageType === "log:subscribe" && event.logMessageData?.addedParticipants?.some(item => String(item.userFbId) === botID);
+		const isBotAdded = event.logMessageType === "log:subscribe" && event.logMessageData?.addedParticipants?.some(item => String(item.userFbId || item.userID || item.userJid) === botID);
 		const isBotKicked = event.logMessageType === "log:unsubscribe" && String(event.logMessageData?.leftParticipantFbId) === botID;
 
 		if (!isBotAdded && !isBotKicked)

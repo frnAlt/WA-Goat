@@ -22,7 +22,6 @@ module.exports = {
 
   onStart: async function ({ api, event, usersData, message }) {
     const { threadID, messageID, senderID, mentions } = event;
-    const token = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
 
     try {
       const { participantIDs } = await api.getThreadInfo(threadID);
@@ -60,8 +59,8 @@ module.exports = {
         api.setMessageReaction("💖", messageID, () => {}, true);
       }
 
-      const avatar1 = `https://graph.facebook.com/${uid1}/picture?width=512&height=512&access_token=${token}`;
-      const avatar2 = `https://graph.facebook.com/${uid2}/picture?width=512&height=512&access_token=${token}`;
+      const avatar1 = (await global.utils?.getAvatar?.(api, uid1)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid1)}`;
+      const avatar2 = (await global.utils?.getAvatar?.(api, uid2)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid2)}`;
       const lovePercent = Math.floor(Math.random() * 51) + 50; // 50% to 100%
 
       const apiUrl = `https://toshiro-api-editz6t9.vercel.app/api/canvas/pair?avatar1=${encodeURIComponent(avatar1)}&avatar2=${encodeURIComponent(avatar2)}&name1=${encodeURIComponent(nameSender)}&name2=${encodeURIComponent(name2)}`;

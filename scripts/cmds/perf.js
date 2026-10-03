@@ -1,5 +1,5 @@
 /**
- * Performance Stats Command - Monitor bot performance and FCA optimizer stats
+ * Performance Stats Command - Monitor bot performance and WCA engine stats
  * Usage: {prefix}perf or {prefix}perf stats
  */
 
@@ -14,7 +14,7 @@ module.exports = {
 			en: "View bot performance statistics"
 		},
 		longDescription: {
-			en: "View detailed performance metrics including memory usage, command stats, spam tracking, and FCA optimizer health"
+			en: "View detailed performance metrics including memory usage, command stats, spam tracking, and WCA engine health"
 		},
 		category: "system",
 		guide: {

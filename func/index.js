@@ -1,12 +1,11 @@
 /**
  * Unified System Functions Export (func/index.js)
- * High-performance backend engine with typography, math, collections, task runner, and FCA enhancements.
+ * High-performance backend engine with typography, math, collections, task runner, and WCA enhancements.
  */
 
 const colors = require("./colors.js");
 const configHelper = require("./configHelper.js");
 const cooldownManager = require("./cooldownManager.js");
-const fcaOptimizer = require("./fcaOptimizer.js");
 const gracefulShutdown = require("./gracefulShutdown.js");
 const mdToText = require("./mdToText.js");
 const messageQueue = require("./messageQueue.js");
@@ -23,12 +22,12 @@ const Numero = require("./numero.js");
 const BigMath = require("./bigMath.js");
 const arielUtils = require("./arielUtils.js");
 const collections = require("./collections.js");
-const BackgroundTaskFB = require("./backgroundTask.js");
+const BackgroundTask = require("./backgroundTask.js");
 const InputClass = require("./inputClass.js");
 const OutputClass = require("./outputClass.js");
 const unisym = require("./unisym.js");
 const definers = require("./definers.js");
-const fcaExtension = require("./fcaExtension.js");
+const wcaExtension = require("./wcaExtension.js");
 const conduitBridge = require("./conduitBridge.js");
 const axeraBridge = require("./axeraBridge.js");
 const automationManager = require("./automationManager.js");
@@ -38,7 +37,6 @@ module.exports = {
   ...colors,
   configHelper,
   cooldownManager,
-  fcaOptimizer,
   gracefulShutdown,
   mdToText,
   messageQueue,
@@ -65,7 +63,8 @@ module.exports = {
   ...collections,
 
   // Background Task Engine
-  BackgroundTaskFB,
+  BackgroundTask,
+  BackgroundTaskFB: BackgroundTask,
 
   // Input & Output Context Models
   InputClass,
@@ -78,9 +77,10 @@ module.exports = {
   // General Cassidy Utils
   ...cassidyUtils,
 
-  // FCA Extension Layer & Bridges
-  fcaExtension,
-  extendFCA: fcaExtension,
+  // WCA Extension Layer & Bridges
+  wcaExtension,
+  extendWCA: wcaExtension,
+  extendFCA: wcaExtension,
   conduitBridge,
   axeraBridge,
   privateThreadManager: require("./privateThreadManager.js")

@@ -12,9 +12,14 @@ module.exports = {
   },
 
   onStart: async function({ message }) {
-    const text = "✓ | Here is the updated repository:\n\nhttps://github.com/lazyneoaz/Goatbot-V2.git\n\n" +
-                 "Changes:\n1. No Google Credentials needed\n2. Enhanced overall performance\n3. Now using @lazyneoaz/nkxfca [ Automatic log out issues Solved ]\n4. Working on all groups\n5. Id Ban Issue solved 90% and running for a long time\n\nNB: If you want to use @lazyneoaz/nkxfca please install by typing: npm i @lazyneoaz/nkxfca@latest\n\n" +
-                 "Keep supporting^_^";
+    const text = "🐐 *WA-Goat (WhatsApp Edition)*\n\n" +
+                 "Powered by Baileys v7 & Floppa-WCA\n\n" +
+                 "Features:\n" +
+                 "• Native WhatsApp Chat API (WCA) powered by Baileys v7\n" +
+                 "• Headless authentication via WA_WEB_ACCESS_TOKEN and pairing codes\n" +
+                 "• Web Dashboard with real-time stats\n" +
+                 "• 700+ commands ported with full media and group support\n" +
+                 "• GitHub Actions runner and cloud deployment workflows";
     
     message.reply(text);
   }

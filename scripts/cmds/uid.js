@@ -9,19 +9,19 @@ module.exports = {
 		countDown: 5,
 		role: 0,
 		description: {
-			vi: "Xem user id facebook của người dùng",
-			en: "View facebook user id of user"
+			vi: "Xem user id WhatsApp của người dùng",
+			en: "View WhatsApp user JID / phone ID of user"
 		},
 		category: "info",
 		guide: {
-			vi: "   {pn}: dùng để xem id facebook của bạn"
-				+ "\n   {pn} @tag: xem id facebook của những người được tag"
-				+ "\n   {pn} <link profile>: xem id facebook của link profile"
-				+ "\n   Phản hồi tin nhắn của người khác kèm lệnh để xem id facebook của họ",
-			en: "   {pn}: use to view your facebook user id"
-				+ "\n   {pn} @tag: view facebook user id of tagged people"
-				+ "\n   {pn} <profile link>: view facebook user id of profile link"
-				+ "\n   Reply to someone's message with the command to view their facebook user id"
+			vi: "   {pn}: dùng để xem id WhatsApp của bạn"
+				+ "\n   {pn} @tag: xem id WhatsApp của những người được tag"
+				+ "\n   {pn} <phone/link>: xem id WhatsApp của số điện thoại/link"
+				+ "\n   Phản hồi tin nhắn của người khác kèm lệnh để xem id WhatsApp của họ",
+			en: "   {pn}: use to view your WhatsApp ID"
+				+ "\n   {pn} @tag: view WhatsApp ID of tagged people"
+				+ "\n   {pn} <phone/link>: view WhatsApp ID of phone/link"
+				+ "\n   Reply to someone's message with the command to view their WhatsApp ID"
 		}
 	},
 

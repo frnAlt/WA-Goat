@@ -177,7 +177,7 @@ module.exports = {
 					userID = args[1];
 				else if (event.messageReply)
 					userID = event.messageReply.senderID;
-				if (isNaN(userID))
+				if (!userID)
 					return message.reply(getLang("missingTarget"));
 				const violationUsers = await threadsData.get(event.threadID, "data.badWords.violationUsers", {});
 				if (!violationUsers[userID])

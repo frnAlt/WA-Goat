@@ -31,7 +31,7 @@ export function createUsers() {
   async function getNameUser(userID) {
     if (!userID) throw new Error("User ID cannot be blank");
     const { [userID]: user } = await usersDB.getUserInfo([String(userID)]);
-    return user?.name || "Facebook users";
+    return user?.name || "WhatsApp user";
   }
 
   /**
@@ -41,18 +41,30 @@ export function createUsers() {
    */
   async function getUserFull(id) {
     try {
-      const response = await api.httpGet(
-        `https://graph.facebook.com/${id}?fields=email,about,birthday,link&access_token=${global.Cassidy.accessToken}`
-      );
-      const userInfo = JSON.parse(response);
+      let pfp = null;
+      if (typeof api?.getProfilePicture === "function") {
+        pfp = await api.getProfilePicture(id).catch(() => null);
+      }
+      if (!pfp && typeof global.utils?.getAvatar === "function") {
+        pfp = await global.utils.getAvatar(api, id).catch(() => null);
+      }
+      if (!pfp) {
+        pfp = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(id)}&size=512`;
+      }
+      let name = id;
+      if (typeof api?.getUserInfo === "function") {
+        const info = await api.getUserInfo(id).catch(() => null);
+        if (info && info[id]?.name) name = info[id].name;
+      }
       return {
         error: 0,
         author: "D-Jukie",
         data: {
-          uid: userInfo.id || null,
-          about: userInfo.about || null,
-          link: userInfo.link || null,
-          imgavt: `https://graph.facebook.com/${userInfo.id}/picture?height=1500&width=1500&access_token=1073911769817594|aa417da57f9e260d1ac1ec4530b417de`,
+          uid: id,
+          name,
+          about: null,
+          link: `https://wa.me/${String(id).replace(/[^0-9]/g, "")}`,
+          imgavt: pfp,
         },
       };
     } catch (error) {
@@ -182,7 +194,7 @@ export function createThreads() {
   async function getNameUser(userID) {
     if (!userID) throw new Error("User ID cannot be blank");
     const { [userID]: user } = await threadsDB.getUserInfo([String(userID)]);
-    return user?.name || "Facebook users";
+    return user?.name || "WhatsApp user";
   }
 
   /**
@@ -192,18 +204,30 @@ export function createThreads() {
    */
   async function getUserFull(id) {
     try {
-      const response = await api.httpGet(
-        `https://graph.facebook.com/${id}?fields=email,about,birthday,link&access_token=${global.Cassidy.accessToken}`
-      );
-      const userInfo = JSON.parse(response);
+      let pfp = null;
+      if (typeof api?.getProfilePicture === "function") {
+        pfp = await api.getProfilePicture(id).catch(() => null);
+      }
+      if (!pfp && typeof global.utils?.getAvatar === "function") {
+        pfp = await global.utils.getAvatar(api, id).catch(() => null);
+      }
+      if (!pfp) {
+        pfp = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(id)}&size=512`;
+      }
+      let name = id;
+      if (typeof api?.getUserInfo === "function") {
+        const info = await api.getUserInfo(id).catch(() => null);
+        if (info && info[id]?.name) name = info[id].name;
+      }
       return {
         error: 0,
         author: "D-Jukie",
         data: {
-          uid: userInfo.id || null,
-          about: userInfo.about || null,
-          link: userInfo.link || null,
-          imgavt: `https://graph.facebook.com/${userInfo.id}/picture?height=1500&width=1500&access_token=1073911769817594|aa417da57f9e260d1ac1ec4530b417de`,
+          uid: id,
+          name,
+          about: null,
+          link: `https://wa.me/${String(id).replace(/[^0-9]/g, "")}`,
+          imgavt: pfp,
         },
       };
     } catch (error) {

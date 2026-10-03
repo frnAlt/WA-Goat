@@ -1,0 +1,320 @@
+name: Deploy & Run WA-Goat (Runner + Cloud)
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'assets/**'
+      - '.gitignore'
+  workflow_dispatch:
+    inputs:
+      deploy_mode:
+        description: 'Deployment target / execution mode'
+        required: true
+        type: choice
+        options:
+          - 'runner'
+          - 'docker'
+          - 'webhook'
+          - 'ssh'
+          - 'all'
+        default: 'runner'
+      runner_type:
+        description: 'GitHub Actions runner environment'
+        required: false
+        type: choice
+        options:
+          - 'ubuntu-latest'
+          - 'self-hosted'
+        default: 'ubuntu-latest'
+      runner_duration:
+        description: 'Maximum runtime in minutes for runner mode (GitHub-hosted max ~350m)'
+        required: false
+        type: string
+        default: '350'
+      node_version:
+        description: 'Node.js LTS runtime version'
+        required: false
+        type: choice
+        options:
+          - '20'
+          - '22'
+        default: '20'
+      auto_restart:
+        description: 'Automatically trigger next run on completion for continuous 24/7 uptime'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  packages: write
+  actions: write
+
+jobs:
+  test-and-verify:
+    name: Syntax & Unit Test Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version || '20' }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Verify All Commands & Events Syntax
+        run: npm run check
+
+      - name: Execute Unit Test Suite
+        run: npm test
+
+  deploy-runner:
+    name: Run Bot on GitHub Actions Runner
+    needs: test-and-verify
+    if: github.event_name == 'workflow_dispatch' ? (inputs.deploy_mode == 'runner' || inputs.deploy_mode == 'all') : true
+    runs-on: ${{ inputs.runner_type || 'ubuntu-latest' }}
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version || '20' }}
+          cache: 'npm'
+
+      - name: Install System Media Dependencies (FFmpeg & WebP)
+        run: |
+          if command -v apt-get &> /dev/null; then
+            sudo apt-get update -y
+            sudo apt-get install -y ffmpeg webp
+          fi
+
+      - name: Install Bot Dependencies
+        run: npm ci || npm install
+
+      - name: Configure Authentication & Environment
+        env:
+          WA_WEB_ACCESS_TOKEN: ${{ secrets.WA_WEB_ACCESS_TOKEN }}
+          SESSION_ID: ${{ secrets.SESSION_ID }}
+          WA_WEB_JSON: ${{ secrets.WA_WEB_JSON }}
+          CONFIG_JSON: ${{ secrets.CONFIG_JSON }}
+          SESSION_ZIP_BASE64: ${{ secrets.SESSION_ZIP_BASE64 }}
+        run: |
+          mkdir -p auth session data
+
+          # 1. Restore config.json if supplied via secret
+          if [ -n "$CONFIG_JSON" ]; then
+            echo "$CONFIG_JSON" > config.json
+            echo "✅ Restored config.json from secret"
+          fi
+
+          # 2. Restore wa_web.json if supplied via secret
+          if [ -n "$WA_WEB_JSON" ]; then
+            echo "$WA_WEB_JSON" > wa_web.json
+            echo "✅ Restored wa_web.json from secret"
+          fi
+
+          # 3. Restore session directory from base64 zip if supplied
+          if [ -n "$SESSION_ZIP_BASE64" ]; then
+            echo "$SESSION_ZIP_BASE64" | base64 -d > session.zip
+            unzip -o -q session.zip -d session/
+            rm session.zip
+            echo "✅ Extracted session archive to session/"
+          fi
+
+          # 4. Export WA_WEB_ACCESS_TOKEN if provided
+          if [ -n "$WA_WEB_ACCESS_TOKEN" ]; then
+            echo "WA_WEB_ACCESS_TOKEN=$WA_WEB_ACCESS_TOKEN" >> $GITHUB_ENV
+            echo "✅ Loaded WA_WEB_ACCESS_TOKEN into environment"
+          elif [ -n "$SESSION_ID" ]; then
+            echo "WA_WEB_ACCESS_TOKEN=$SESSION_ID" >> $GITHUB_ENV
+            echo "✅ Loaded SESSION_ID as WA_WEB_ACCESS_TOKEN into environment"
+          fi
+
+      - name: Launch & Monitor Bot on Runner
+        env:
+          PORT: 3000
+          NODE_ENV: production
+          WA_WEB_ACCESS_TOKEN: ${{ secrets.WA_WEB_ACCESS_TOKEN || secrets.SESSION_ID }}
+          OWNER_NUMBER: ${{ secrets.OWNER_NUMBER }}
+          PREFIX: ${{ secrets.PREFIX || '!' }}
+          RUN_DURATION_MINUTES: ${{ inputs.runner_duration || '350' }}
+        run: |
+          echo "=========================================="
+          echo "🚀 Launching WA-Goat on GitHub Runner"
+          echo "⏱️  Configured Runtime: ${RUN_DURATION_MINUTES} minutes"
+          echo "=========================================="
+
+          # Start bot in background and capture PID
+          npm start &
+          BOT_PID=$!
+          echo "Bot process started with PID: $BOT_PID"
+
+          # Wait for dashboard / HTTP health server to be reachable
+          echo "Waiting for health check endpoint..."
+          HEALTH_URL="http://127.0.0.1:3000/stats"
+          UP=false
+          for i in {1..30}; do
+            if curl -s -f "$HEALTH_URL" > /dev/null 2>&1 || curl -s -f "http://127.0.0.1:3000/" > /dev/null 2>&1; then
+              echo "✅ Health check passed! WA-Goat is live and listening on port 3000."
+              UP=true
+              break
+            fi
+            if ! kill -0 $BOT_PID 2>/dev/null; then
+              echo "❌ Bot process exited unexpectedly."
+              wait $BOT_PID
+              exit 1
+            fi
+            sleep 2
+          done
+
+          if [ "$UP" != "true" ]; then
+            echo "⚠️ Health check timed out, but bot process is still alive. Continuing monitor loop..."
+          fi
+
+          # Keep-alive loop running up to RUN_DURATION_MINUTES
+          TARGET_SECONDS=$(( RUN_DURATION_MINUTES * 60 ))
+          START_TIME=$(date +%s)
+          echo "Bot supervisor loop active until target time reached."
+
+          while kill -0 $BOT_PID 2>/dev/null; do
+            CURRENT_TIME=$(date +%s)
+            ELAPSED=$(( CURRENT_TIME - START_TIME ))
+            if [ $ELAPSED -ge $TARGET_SECONDS ]; then
+              echo "⏱️ Maximum run duration reached (${RUN_DURATION_MINUTES}m). Gracefully stopping..."
+              kill -TERM $BOT_PID 2>/dev/null || true
+              wait $BOT_PID 2>/dev/null || true
+              break
+            fi
+            sleep 15
+          done
+
+          echo "Process finished cleanly."
+
+      - name: Trigger Auto-Restart (24/7 Continuity)
+        if: always() && inputs.auto_restart == true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔄 Auto-restart enabled. Triggering next workflow run..."
+          gh workflow run deploy.yml \
+            --ref "${{ github.ref_name }}" \
+            -f deploy_mode="${{ inputs.deploy_mode || 'runner' }}" \
+            -f runner_type="${{ inputs.runner_type || 'ubuntu-latest' }}" \
+            -f runner_duration="${{ inputs.runner_duration || '350' }}" \
+            -f node_version="${{ inputs.node_version || '20' }}" \
+            -f auto_restart=true || echo "⚠️ Could not trigger next workflow cycle (check token permissions)."
+
+  docker-build:
+    name: Build & Push Docker Image
+    needs: test-and-verify
+    if: inputs.deploy_mode == 'docker' || inputs.deploy_mode == 'all'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-webhook:
+    name: Deploy via Cloud Webhook
+    needs: test-and-verify
+    if: always() && (inputs.deploy_mode == 'webhook' || inputs.deploy_mode == 'all' || (github.event_name == 'push' && secrets.DEPLOY_WEBHOOK_URL != ''))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Deployment Webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        run: |
+          if [ -n "$WEBHOOK_URL" ]; then
+            echo "🚀 Triggering cloud deployment webhook..."
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$WEBHOOK_URL")
+            echo "Webhook responded with HTTP: $RESPONSE"
+            if [ "$RESPONSE" -ge 200 ] && [ "$RESPONSE" -lt 400 ]; then
+              echo "✅ Webhook successfully triggered deployment!"
+            else
+              echo "⚠️ Webhook returned unexpected status code: $RESPONSE"
+            fi
+          else
+            echo "ℹ️ No DEPLOY_WEBHOOK_URL secret configured. Skipping webhook step."
+          fi
+
+  deploy-ssh:
+    name: Deploy via SSH (VPS / Server)
+    needs: test-and-verify
+    if: always() && (inputs.deploy_mode == 'ssh' || inputs.deploy_mode == 'all')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Execute Remote SSH Deploy Script
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '~/WA-Goat' }}
+        run: |
+          if [ -n "$SSH_HOST" ] && [ -n "$SSH_KEY" ]; then
+            echo "🚀 Connecting to remote server $SSH_HOST..."
+            mkdir -p ~/.ssh
+            echo "$SSH_KEY" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+            ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" << EOF
+              set -e
+              cd $DEPLOY_PATH
+              git pull origin main || git pull origin master
+              npm install --omit=dev
+              if command -v pm2 &> /dev/null; then
+                pm2 restart wa-goat || pm2 restart 0 || pm2 start src/index.js --name wa-goat
+              elif [ -f docker-compose.yml ]; then
+                docker compose up -d --build
+              else
+                npm start &
+              fi
+            EOF
+            echo "✅ Remote deployment completed successfully!"
+          else
+            echo "ℹ️ SSH_HOST or SSH_KEY secret not set. Skipping SSH deployment."
+          fi

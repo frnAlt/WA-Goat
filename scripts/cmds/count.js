@@ -50,7 +50,7 @@ module.exports = {
 		for (const user of members) {
 			if (!usersInGroup.includes(user.userID))
 				continue;
-			const charac = "️️️️️️️️️️️️️️️️️"; // This character is banned from facebook chat (it is not an empty string)
+			const charac = "️️️️️️️️️️️️️️️️️"; // Zero-width / invisible separator check
 			arraySort.push({
 				name: user.name.includes(charac) ? `Uid: ${user.userID}` : user.name,
 				count: user.count,

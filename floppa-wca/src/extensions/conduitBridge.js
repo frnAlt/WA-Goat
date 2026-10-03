@@ -680,8 +680,14 @@ function createDomainNamespaces(api, queue, cache) {
         const cacheKey = `users_${uids.sort().join("_")}`;
         return cache.touch(cacheKey, () => promisfy(api.getUserInfo.bind(api))(uids));
       },
-      getAvatar: (userID, height = 500, width = 500) => {
-        return `https://graph.facebook.com/${userID}/picture?height=${height}&width=${width}&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+      getAvatar: async (userID, height = 500, width = 500) => {
+        try {
+          if (typeof api.getProfilePicture === "function") {
+            const pfp = await api.getProfilePicture(userID);
+            if (pfp) return pfp;
+          }
+        } catch (_) {}
+        return `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(userID)}&size=${Math.max(height, width)}`;
       }
     },
 

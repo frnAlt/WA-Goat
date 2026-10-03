@@ -24,7 +24,19 @@ module.exports = {
   onStart: async function ({ api, event, message, args, usersData }) {
     let imageUrl = "";
     let uid = String(event.senderID);
-    const token = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
+    const getTargetAvatar = async (targetId) => {
+      try {
+        if (typeof global.utils?.getAvatar === "function") {
+          const av = await global.utils.getAvatar(api, targetId);
+          if (av) return av;
+        }
+        if (typeof api?.getProfilePicture === "function") {
+          const av = await api.getProfilePicture(targetId);
+          if (av) return av;
+        }
+      } catch (_) {}
+      return `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(targetId)}&size=512`;
+    };
 
     if (event.messageReply?.attachments?.length > 0 && (event.messageReply.attachments[0].type === "photo" || event.messageReply.attachments[0].type === "image")) {
       imageUrl = event.messageReply.attachments[0].url;
@@ -33,20 +45,20 @@ module.exports = {
       }
     } else if (event.mentions && Object.keys(event.mentions).length > 0) {
       uid = Object.keys(event.mentions)[0];
-      imageUrl = `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = await getTargetAvatar(uid);
     } else if (event.messageReply) {
       const rUid = event.messageReply.senderID || event.messageReply.actorFbId;
       if (rUid) {
         uid = String(rUid);
-        imageUrl = `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${token}`;
+        imageUrl = await getTargetAvatar(uid);
       }
     } else if (args[0] && /^\d+$/.test(args[0].trim())) {
       uid = args[0].trim();
-      imageUrl = `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = await getTargetAvatar(uid);
     } else if (args[0] && args[0].startsWith("http")) {
       imageUrl = args[0];
     } else {
-      imageUrl = `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = await getTargetAvatar(uid);
     }
 
     if (api.setMessageReaction) {

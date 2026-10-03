@@ -27,8 +27,8 @@ module.exports = {
 
 	langs: {
 		vi: {
-			notFoundTarget: "⚠️ | Vui lòng tag người cần cấm hoặc nhập uid hoặc link fb hoặc phản hồi tin nhắn của người cần cấm",
-			notFoundTargetUnban: "⚠️ | Vui lòng tag người cần bỏ cấm hoặc nhập uid hoặc link fb hoặc phản hồi tin nhắn của người cần bỏ cấm",
+			notFoundTarget: "⚠️ | Vui lòng tag người cần cấm hoặc nhập số điện thoại hoặc phản hồi tin nhắn của người cần cấm",
+			notFoundTargetUnban: "⚠️ | Vui lòng tag người cần bỏ cấm hoặc nhập số điện thoại hoặc phản hồi tin nhắn của người cần bỏ cấm",
 			userNotBanned: "⚠️ | Người mang id %1 không bị cấm khỏi box chat này",
 			unbannedSuccess: "✅ | Đã bỏ cấm %1 khỏi box chat!",
 			cantSelfBan: "⚠️ | Bạn không thể tự cấm chính mình!",
@@ -37,7 +37,7 @@ module.exports = {
 			noReason: "Không có lý do",
 			bannedSuccess: "✅ | Đã cấm %1 khỏi box chat!",
 			needAdmin: "⚠️ | Bot cần quyền quản trị viên để kick thành viên bị cấm",
-			noName: "Người dùng facebook",
+			noName: "Người dùng WhatsApp",
 			noData: "📑 | Không có thành viên nào bị cấm trong box chat này",
 			listBanned: "📑 | Danh sách thành viên bị cấm trong box chat này (trang %1/%2)",
 			content: "%1/ %2 (%3)\nLý do: %4\nThời gian cấm: %5\n\n",
@@ -45,8 +45,8 @@ module.exports = {
 			bannedKick: "⚠️ | %1 đã bị cấm khỏi box chat từ trước!\nUID: %2\nLý do: %3\nThời gian cấm: %4\n\nBot đã tự động kick thành viên này"
 		},
 		en: {
-			notFoundTarget: "⚠️ | Please tag the person to ban or enter uid or fb link or reply to the message of the person to ban",
-			notFoundTargetUnban: "⚠️ | Please tag the person to unban or enter uid or fb link or reply to the message of the person to unban",
+			notFoundTarget: "⚠️ | Please tag the person to ban, enter phone number or reply to their message",
+			notFoundTargetUnban: "⚠️ | Please tag the person to unban, enter phone number or reply to their message",
 			userNotBanned: "⚠️ | The person with id %1 is not banned from this box chat",
 			unbannedSuccess: "✅ | Unbanned %1 from box chat!",
 			cantSelfBan: "⚠️ | You can't ban yourself!",
@@ -55,7 +55,7 @@ module.exports = {
 			noReason: "No reason",
 			bannedSuccess: "✅ | Banned %1 from box chat!",
 			needAdmin: "⚠️ | Bot needs administrator permission to kick banned members",
-			noName: "Facebook user",
+			noName: "WhatsApp user",
 			noData: "📑 | There are no banned members in this box chat",
 			listBanned: "📑 | List of banned members in this box chat (page %1/%2)",
 			content: "%1/ %2 (%3)\nReason: %4\nBan time: %5\n\n",

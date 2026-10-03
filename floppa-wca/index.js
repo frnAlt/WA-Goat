@@ -397,11 +397,11 @@ function buildAPI(sock, ctx, globalOptions, onListenStore) {
     api.setMessageReaction      = (emoji, mid, cb, tid) => api.reactToMessage(emoji, mid, tid, cb);
     api.unsendMessage           = (mid, cb, tid) => api.deleteMessage(mid, tid, cb);
 
-    // ── Floppa Extension Layer (Conduit builders, sliding cache, queues, Axera suites) ──
+    // ── Floppa WCA Extension Layer (Conduit builders, sliding cache, queues, Axera suites) ──
     try {
-        const extendFCA = require("./src/extensions/fcaExtension.js");
-        if (typeof extendFCA === "function") {
-            extendFCA(api);
+        const extendWCA = require("./src/extensions/wcaExtension.js");
+        if (typeof extendWCA === "function") {
+            extendWCA(api);
         }
     } catch (_) {}
 

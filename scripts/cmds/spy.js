@@ -66,7 +66,7 @@ module.exports = {
       const vanity = fb.vanity || userData?.vanity || null;
       const username = vanity ? `@${vanity}` : "None";
       const gender = parseGender(userData?.gender ?? fb.gender);
-      const profileUrl = `https://facebook.com/${vanity || uid}`;
+      const profileUrl = `https://wa.me/${uid.replace(/[^0-9]/g, '')}`;
       const isBotFriend = typeof fb.isFriend === "boolean"
         ? (fb.isFriend ? "Yes" : "No")
         : (userData?.isBotFriend ? "Yes" : "No");
@@ -113,8 +113,8 @@ module.exports = {
       // Profile avatar stream
       let avatarStream = null;
       const avatarUrl = (await usersData.getAvatarUrl(uid).catch(() => null)) ||
-        fb.profilePicUrl ||
-        `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+        (await global.utils?.getAvatar?.(api, uid)) ||
+        `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}`;
 
       const getStreamFromURL = global.utils?.getStreamFromURL;
       if (avatarUrl && typeof getStreamFromURL === "function") {

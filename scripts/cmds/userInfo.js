@@ -34,5 +34,5 @@ export async function entry({ input, output, usersDB, args }) {
 **ID**: ${ID}
 **TID**: ${
     input.threadID
-  }\n\n**FB Link**:\nhttps://facebook.com/profile.php?id=${ID}`);
+  }\n\n**WhatsApp Link**:\nhttps://wa.me/${String(ID).replace(/[^0-9]/g, "")}`);
 }

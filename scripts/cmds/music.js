@@ -35,24 +35,23 @@ async function searchTracks(api, query, count = 6) {
 	} else if (typeof api?.music?.search === "function") {
 		const res = await api.music.search(query, { count });
 		tracks = res?.tracks || [];
-	} else if (typeof global.GoatBot?.fcaApi?.searchMusic === "function") {
-		const res = await global.GoatBot.fcaApi.searchMusic(query, { count });
+	} else if (typeof global.GoatBot?.wcaApi?.searchMusic === "function") {
+		const res = await global.GoatBot.wcaApi.searchMusic(query, { count });
 		tracks = res?.tracks || [];
 	} else {
 		try {
-			const searchMusicFactory = require("../../fca/src/searchMusic");
-			const defaultFuncs = api?.__defaultFuncs || api?.defaultFuncs || {
-				post: (url, jar, form) => axios.post(url, new URLSearchParams(form).toString(), {
-					headers: { "Content-Type": "application/x-www-form-urlencoded" },
-					jar,
-					withCredentials: true
-				}).then(r => r.data)
-			};
-			const fn = searchMusicFactory(defaultFuncs, api, api?.ctx || {});
-			const res = await fn(query, { count });
-			tracks = res?.tracks || [];
+			const yts = require("yt-search");
+			const r = await yts(query);
+			tracks = (r.videos || []).slice(0, count).map(v => ({
+				id: v.videoId,
+				name: v.title,
+				title: v.title,
+				artist: v.author?.name || "Unknown Artist",
+				duration: v.timestamp || v.seconds,
+				url: v.url
+			}));
 		} catch (e) {
-			throw new Error(`searchMusic query failed: ${e.message}`);
+			tracks = [];
 		}
 	}
 
@@ -135,13 +134,13 @@ async function sendTrack(message, event, api, track) {
 module.exports = {
 	config: {
 		name: "music",
-		aliases: ["fca-music", "fbmusic", "track", "stickermusic"],
-		version: "1.2.0",
+		aliases: ["wamusic", "track", "musicsearch"],
+		version: "1.3.0",
 		author: "frnAlt",
 		countDown: 1, // Minimal cooldown to eliminate command delay
 		role: 0,
 		description: {
-			en: "Search Facebook Stories music catalog and send playable audio track"
+			en: "Search music catalog and send playable audio track"
 		},
 		category: "media",
 		guide: {

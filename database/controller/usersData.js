@@ -193,17 +193,6 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
                         if (cached) return cached;
                 }
 
-                try {
-                        const user = await axios.post(`https://www.facebook.com/api/graphql/?q=${`node(${userID}){name}`}`);
-                        if (user.data?.[userID]?.name) {
-                                const fetchedName = user.data[userID].name;
-                                const uIdx = global.db.allUserData.findIndex(u => u.userID == userID);
-                                if (uIdx !== -1) global.db.allUserData[uIdx].name = fetchedName;
-                                return fetchedName;
-                        }
-                }
-                catch (error) {}
-
                 if (api && typeof api.getUserInfo === 'function') {
                         try {
                                 const info = await api.getUserInfo(String(userID));
@@ -224,12 +213,21 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
                         return "https://i.ibb.co/bBSpr5v/143086968-2856368904622192-1959732218791162458-n.png";
                 }
                 const cleanID = String(userID).replace(/(fb)?id[:.]/, "").trim();
-                if (!cleanID || isNaN(cleanID) || cleanID === "0") {
+                if (!cleanID || cleanID === "0") {
                         return "https://i.ibb.co/bBSpr5v/143086968-2856368904622192-1959732218791162458-n.png";
                 }
                 const existing = global.db?.allUserData?.find(u => u.userID == cleanID);
                 if (existing?.avatar && !existing.avatar.includes("graph.facebook.com") && !existing.avatar.includes("UlIqmHJn-SK.gif")) {
                         return existing.avatar;
+                }
+                if (api && typeof api.getProfilePicture === "function") {
+                        try {
+                                const pfpUrl = await api.getProfilePicture(cleanID);
+                                if (pfpUrl) {
+                                        if (existing) existing.avatar = pfpUrl;
+                                        return pfpUrl;
+                                }
+                        } catch (_) {}
                 }
                 if (api && typeof api.getUserInfo === "function") {
                         try {
@@ -243,7 +241,7 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
                                 }
                         } catch (_) {}
                 }
-                return `https://graph.facebook.com/${cleanID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+                return `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(cleanID)}`;
         }
 
         async function create_(userID, userInfo) {

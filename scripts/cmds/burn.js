@@ -23,7 +23,19 @@ module.exports = {
 
   onStart: async function ({ api, event, message, args }) {
     let imageUrl = "";
-    const token = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
+    const getTargetAvatar = async (targetId) => {
+      try {
+        if (typeof global.utils?.getAvatar === "function") {
+          const av = await global.utils.getAvatar(api, targetId);
+          if (av) return av;
+        }
+        if (typeof api?.getProfilePicture === "function") {
+          const av = await api.getProfilePicture(targetId);
+          if (av) return av;
+        }
+      } catch (_) {}
+      return `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(targetId)}&size=512`;
+    };
 
     if (event.messageReply?.attachments?.length > 0) {
       const att = event.messageReply.attachments[0];
@@ -43,16 +55,16 @@ module.exports = {
     }
     if (!imageUrl && event.mentions && Object.keys(event.mentions).length > 0) {
       const uid = Object.keys(event.mentions)[0];
-      imageUrl = `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = await getTargetAvatar(uid);
     } else if (!imageUrl && event.messageReply) {
       const uid = event.messageReply.senderID || event.messageReply.actorFbId;
-      if (uid) imageUrl = `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${token}`;
+      if (uid) imageUrl = await getTargetAvatar(uid);
     } else if (!imageUrl && args[0] && /^\d+$/.test(args[0].trim())) {
-      imageUrl = `https://graph.facebook.com/${args[0].trim()}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = await getTargetAvatar(args[0].trim());
     } else if (!imageUrl && args[0] && args[0].startsWith("http")) {
       imageUrl = args[0];
     } else if (!imageUrl) {
-      imageUrl = `https://graph.facebook.com/${event.senderID}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = await getTargetAvatar(event.senderID);
     }
 
     if (api.setMessageReaction) {

@@ -53,7 +53,7 @@ module.exports = {
 				let threadIdToSet = args[1] || event.threadID;
 				
 				// Validate thread ID
-				if (isNaN(threadIdToSet)) {
+				if (!threadIdToSet || typeof threadIdToSet !== "string") {
 					return message.reply(getLang("invalidThreadId"));
 				}
 

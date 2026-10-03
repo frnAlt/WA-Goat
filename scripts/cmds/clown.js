@@ -23,7 +23,6 @@ module.exports = {
 
   onStart: async function ({ api, event, message, args }) {
     let imageUrl = "";
-    const token = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
 
     if (event.messageReply?.attachments?.length > 0) {
       const att = event.messageReply.attachments[0];
@@ -43,16 +42,17 @@ module.exports = {
     }
     if (!imageUrl && event.mentions && Object.keys(event.mentions).length > 0) {
       const uid = Object.keys(event.mentions)[0];
-      imageUrl = `https://graph.facebook.com/${targetUID || uid}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = (await global.utils?.getAvatar?.(api, uid)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}`;
     } else if (!imageUrl && event.messageReply) {
       const uid = event.messageReply.senderID || event.messageReply.actorFbId;
-      if (uid) imageUrl = `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${token}`;
-    } else if (!imageUrl && args[0] && /^\d+$/.test(args[0].trim())) {
-      imageUrl = `https://graph.facebook.com/${args[0].trim()}/picture?width=720&height=720&access_token=${token}`;
+      if (uid) imageUrl = (await global.utils?.getAvatar?.(api, uid)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}`;
     } else if (!imageUrl && args[0] && args[0].startsWith("http")) {
       imageUrl = args[0];
+    } else if (!imageUrl && args[0]) {
+      const uid = args[0].trim();
+      imageUrl = (await global.utils?.getAvatar?.(api, uid)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}`;
     } else if (!imageUrl) {
-      imageUrl = `https://graph.facebook.com/${event.senderID}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = (await global.utils?.getAvatar?.(api, event.senderID)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(event.senderID)}`;
     }
 
     if (api.setMessageReaction) {

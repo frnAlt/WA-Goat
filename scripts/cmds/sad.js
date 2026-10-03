@@ -46,13 +46,18 @@ module.exports = {
         );
       }
 
-      const token =
-        "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
-
-      const image =
-        `https://graph.facebook.com/${uid}/picture` +
-        `?width=720&height=720` +
-        `&access_token=${token}`;
+      let image;
+      try {
+        if (typeof global.utils?.getAvatar === "function") {
+          image = await global.utils.getAvatar(api, uid);
+        }
+        if (!image && typeof api?.getProfilePicture === "function") {
+          image = await api.getProfilePicture(uid);
+        }
+      } catch (_) {}
+      if (!image) {
+        image = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}&size=512`;
+      }
 
       const apiUrl =
         `https://toshiro-api-editz6t9.vercel.app/api/canvas/greyscale` +

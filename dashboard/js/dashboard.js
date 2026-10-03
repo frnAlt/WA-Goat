@@ -30,7 +30,7 @@ function switchTab(name) {
         $$('.nav-link[data-tab]').forEach(l => l.classList.toggle('active', l.dataset.tab === name));
         $('#crumbHere').textContent = ({
                 overview: 'Overview', files: 'Files', console: 'Console',
-                stai: 'STAI', config: 'Config', cookies: 'WA Web Token', scripts: 'Scripts', fca: 'FCA'
+                stai: 'STAI', config: 'Config', cookies: 'WA Web Token', scripts: 'Scripts', wca: 'WCA Engine', fca: 'WCA Engine'
         })[name] || 'Dashboard';
         // close mobile sidebar
         $('#sidebar')?.classList.remove('open');
@@ -40,7 +40,7 @@ function switchTab(name) {
         if (name === 'config') loadConfig();
         if (name === 'cookies') loadCookies();
         if (name === 'scripts') loadScripts();
-        if (name === 'fca') loadFca();
+        if (name === 'wca' || name === 'fca') loadWca();
         if (name === 'stai') staiFocus();
 }
 
@@ -716,6 +716,34 @@ $('#navToggle')?.addEventListener('click', () => {
         $('#scrim').classList.toggle('show');
 });
 $('#scrim')?.addEventListener('click', () => { $('#sidebar').classList.remove('open'); $('#scrim').classList.remove('show'); });
+
+/* ---------- WCA Engine Info ---------- */
+async function loadWca() {
+        const cur = $('#wcaCurrent') || $('#fcaCurrent');
+        const grid = $('#wcaGrid') || $('#fcaGrid');
+        if (!grid) return;
+
+        try {
+                const res = await api('/stats');
+                if (cur) cur.innerHTML = `Active Engine: <strong style="color:var(--accent,#22c55e)">Floppa-WCA v${res.wcaVersion || res.fcaVersion || '2.0.0'}</strong> (WhatsApp Chat API)`;
+                grid.innerHTML = `
+                        <div class="card" style="padding:14px;border:1px solid var(--border,#333);border-radius:8px">
+                                <h4 style="margin:0 0 6px 0;font-size:14px">📱 WhatsApp Engine</h4>
+                                <p style="margin:0;font-size:12.5px;color:var(--text-2,#888)">Baileys v7.0.0-rc14 Multi-Device Socket</p>
+                        </div>
+                        <div class="card" style="padding:14px;border:1px solid var(--border,#333);border-radius:8px">
+                                <h4 style="margin:0 0 6px 0;font-size:14px">🧩 WCA Extensions</h4>
+                                <p style="margin:0;font-size:12.5px;color:var(--text-2,#888)">Conduit Builders, Queues, Sliding Cache & Axera</p>
+                        </div>
+                        <div class="card" style="padding:14px;border:1px solid var(--border,#333);border-radius:8px">
+                                <h4 style="margin:0 0 6px 0;font-size:14px">🔐 Auth Sync</h4>
+                                <p style="margin:0;font-size:12.5px;color:var(--text-2,#888)">wa_web_access_token & Headless Restorer</p>
+                        </div>
+                `;
+        } catch (e) {
+                if (cur) cur.textContent = 'Failed to load WCA engine details.';
+        }
+}
 
 /* ---------- Boot ---------- */
 window.addEventListener('beforeunload', (e) => {

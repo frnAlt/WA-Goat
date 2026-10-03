@@ -144,9 +144,7 @@ async function getAvatar(uid, usersData) {
   } catch (e) {}
 
   if (!url) {
-
-    url = `https://graph.facebook.com/${uid}/picture?width=512&height=512`;
-
+    url = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}&size=512`;
   }
 
   return url;

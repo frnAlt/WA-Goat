@@ -15,7 +15,7 @@ module.exports = {
 		guide: {
 			en: "   {pn} [on | off]: turn on/off selfListen"
 				+ "\n   {pn} status: show the current selfListen value"
-				+ "\n   selfListen is read when the bot connects to Facebook, so restart the bot after changing it"
+				+ "\n   selfListen is read when the bot connects, so restart the bot after changing it"
 		}
 	},
 
@@ -32,9 +32,9 @@ module.exports = {
 	onStart: async function ({ args, message, getLang }) {
 		const botObj = global.FloppaBot || global.GoatBot || {};
 		const option = args[0] ? args[0].toLowerCase() : "";
-		const optionsFca = (botObj.config && botObj.config.optionsFca) || {};
-		if (botObj.config && !botObj.config.optionsFca) {
-			botObj.config.optionsFca = optionsFca;
+		const optionsFca = (botObj.config && (botObj.config.optionsWca || botObj.config.optionsFca)) || {};
+		if (botObj.config && !botObj.config.optionsWca && !botObj.config.optionsFca) {
+			botObj.config.optionsWca = optionsFca;
 		}
 
 		if (!option || option === "status" || option === "check")
@@ -45,8 +45,9 @@ module.exports = {
 
 		const value = option === "on";
 		optionsFca.selfListen = value;
-		if (botObj.config?.optionsFca) {
-			botObj.config.optionsFca.selfListen = value;
+		if (botObj.config) {
+			if (botObj.config.optionsWca) botObj.config.optionsWca.selfListen = value;
+			if (botObj.config.optionsFca) botObj.config.optionsFca.selfListen = value;
 		}
 		const configPath = global.client?.dirConfig || `${process.cwd()}/config.json`;
 		if (botObj.config) {

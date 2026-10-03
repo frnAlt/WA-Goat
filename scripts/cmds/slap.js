@@ -71,9 +71,8 @@ module.exports = {
         return message.reply("👤 Please mention 1 or 2 users, or reply to a message to slap!");
       }
 
-      const token = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
-      const image1 = `https://graph.facebook.com/${one}/picture?width=720&height=720&access_token=${token}`;
-      const image2 = `https://graph.facebook.com/${two}/picture?width=720&height=720&access_token=${token}`;
+      const image1 = (await global.utils?.getAvatar?.(api, one)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(one)}`;
+      const image2 = (await global.utils?.getAvatar?.(api, two)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(two)}`;
 
       let stream = null;
       try {

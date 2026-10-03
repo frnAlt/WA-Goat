@@ -6,7 +6,7 @@ module.exports = {
     author: "frnAlt",
     countDown: 3,
     role: 0,
-    description: "Share Facebook Messenger contact card in the thread using MQTT engine",
+    description: "Share contact card or WhatsApp contact in the chat",
     category: "info",
     guide: {
       en: "{pn} <userID> [custom text] - Share contact card for target user\n{pn} me - Share your own contact card\n{pn} (reply to user) - Share replied user's contact card"
@@ -38,6 +38,8 @@ module.exports = {
     }
 
     const cardText = customText || `Contact Profile: ${targetID}`;
+    const cleanNumber = String(targetID).replace(/[^0-9]/g, "");
+    const waLink = cleanNumber ? `https://wa.me/${cleanNumber}` : "";
 
     try {
       if (typeof api.shareContact === "function") {
@@ -49,14 +51,14 @@ module.exports = {
         });
       } else {
         await message.reply({
-          body: `📇 Contact: https://facebook.com/${targetID}\n${cardText}`,
+          body: `📇 Contact: ${waLink}\n${cardText}`,
           mentions: [{ tag: `@User`, id: targetID }]
         });
       }
     } catch (error) {
       // Fallback
       return message.reply({
-        body: `📇 Contact Profile: https://facebook.com/${targetID}\n${cardText}`,
+        body: `📇 Contact Profile: ${waLink}\n${cardText}`,
         mentions: [{ tag: `@User`, id: targetID }]
       });
     }

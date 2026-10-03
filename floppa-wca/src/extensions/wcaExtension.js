@@ -1,17 +1,21 @@
 /**
- * Extended Facebook & Messenger FCA API Suite
- * Provides full modern capabilities: MQTT messaging, animated edits, contact cards,
- * story/post reactions, avatar/bio management, thread administration, attachment handling,
+ * Extended WhatsApp WCA (WhatsApp Chat API) Suite
+ * Provides full modern WhatsApp capabilities: messaging, animated edits, contact cards,
+ * message reactions, avatar/bio management, group administration, attachment handling,
  * conduit fluent builders, sliding cache, message collectors, queues, domain namespaces,
  * SentMessage helpers, and Axera rich status/notes, themes, photo resolver, and emoji suites.
  *
- * Powered by Floppa Engine.
+ * Powered by Floppa Engine & Baileys v7.
  */
 
 const axios = require("axios");
 const fs = require("fs-extra");
-const path = require("path");
-const log = require("../logger/log.js");
+const log = {
+  info: (tag, ...args) => console.log(`[INFO] ${tag}:`, ...args),
+  warn: (tag, ...args) => console.warn(`[WARN] ${tag}:`, ...args),
+  err: (tag, ...args) => console.error(`[ERR] ${tag}:`, ...args),
+  success: (tag, ...args) => console.log(`[OK] ${tag}:`, ...args)
+};
 
 const {
   ConduitAttachmentBuilder,
@@ -33,12 +37,12 @@ const {
 
 const { botAutomation } = require("./automationManager.js");
 
-function extendFCA(api) {
+function extendWCA(api) {
   if (!api || api.__isFloppaExtended) return api;
 
   const defaultCallback = (err, data) => {
     if (err && process.env.NODE_ENV === "development") {
-      log.warn("FCA_API", err.message || err);
+      log.warn("WCA_API", err.message || err);
     }
   };
 
@@ -109,19 +113,33 @@ function extendFCA(api) {
     return resolvePhotoUrl(api, fbid, callback);
   };
 
-  // ─── 4b. Stories Music Search ─────────────────────────────────────────────
+  // ─── 4b. Music Search ─────────────────────────────────────────────
   if (typeof api.searchMusic !== "function") {
-    try {
-      const searchMusicFactory = require("../fca/src/searchMusic.js");
-      const defaultFuncs = api.__defaultFuncs || api.defaultFuncs || {
-        post: (url, jar, form) => axios.post(url, new URLSearchParams(form).toString(), {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          jar,
-          withCredentials: true
-        }).then(r => r.data)
-      };
-      api.searchMusic = searchMusicFactory(defaultFuncs, api, ctx);
-    } catch (_) {}
+    api.searchMusic = async function (query, options, callback) {
+      const cb = typeof options === "function" ? options : callback;
+      try {
+        let yts = null;
+        try { yts = require("yt-search"); } catch (_) {}
+        if (yts) {
+          const res = await yts(query);
+          const tracks = (res.videos || []).slice(0, 10).map(v => ({
+            id: v.videoId,
+            title: v.title,
+            artist: v.author?.name || "Unknown Artist",
+            duration: v.seconds,
+            url: v.url
+          }));
+          if (typeof cb === "function") cb(null, tracks);
+          return tracks;
+        }
+      } catch (err) {
+        if (typeof cb === "function") return cb(err);
+        throw err;
+      }
+      const err = new Error("searchMusic: yt-search not available");
+      if (typeof cb === "function") return cb(err);
+      return Promise.reject(err);
+    };
   }
   if (!api.music) {
     api.music = {
@@ -620,8 +638,9 @@ function extendFCA(api) {
   return api;
 }
 
-module.exports = extendFCA;
-module.exports.extendFCA = extendFCA;
+module.exports = extendWCA;
+module.exports.extendWCA = extendWCA;
+module.exports.extendFCA = extendWCA;
 module.exports.ConduitMessageBuilder = ConduitMessageBuilder;
 module.exports.ConduitAttachmentBuilder = ConduitAttachmentBuilder;
 module.exports.ConduitMessageCollector = ConduitMessageCollector;

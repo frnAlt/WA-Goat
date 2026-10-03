@@ -1,5 +1,5 @@
 /**
- * Built-in FCA Utilities Replacement for Floppa
+ * Built-in WCA Utilities Replacement for Floppa WhatsApp Edition
  */
 
 function censor(text) {

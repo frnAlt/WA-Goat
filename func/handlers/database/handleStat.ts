@@ -786,12 +786,11 @@ export default class UserStatsManager {
 
   async getAvatarURLNew(uid: string, size = 720) {
     try {
-      const res = await axios.get(
-        `https://graph.facebook.com/${uid}/picture?width=${size}&height=${size}&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`
-      );
+      const diceUrl = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}&size=${size}`;
+      const res = await axios.get(diceUrl);
       return {
         res,
-        url: res.request.res.responseUrl as string,
+        url: diceUrl,
       };
     } catch (error) {
       return {

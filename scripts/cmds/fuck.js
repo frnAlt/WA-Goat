@@ -15,7 +15,7 @@ module.exports = {
     guide: "{pn} @tag"
   },
 
-  onStart: async function ({ message, event, args, usersData }) {
+  onStart: async function ({ message, event, args, usersData, api }) {
     const mention = Object.keys(event.mentions || {});
     if (mention.length === 0) {
       return message.reply("Please mention someone!");
@@ -24,9 +24,8 @@ module.exports = {
     const two = mention[0];
 
     try {
-      const token = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
-      const avoneUrl = `https://graph.facebook.com/${one}/picture?width=512&height=512&access_token=${token}`;
-      const avtwoUrl = `https://graph.facebook.com/${two}/picture?width=512&height=512&access_token=${token}`;
+      const avoneUrl = (await global.utils?.getAvatar?.(api, one)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(one)}`;
+      const avtwoUrl = (await global.utils?.getAvatar?.(api, two)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(two)}`;
 
       const [avone, avtwo, img] = await Promise.all([
         Jimp.read(avoneUrl).catch(() => null),

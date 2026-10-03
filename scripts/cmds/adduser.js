@@ -1,140 +1,108 @@
-const { findUid } = global.utils;
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
 module.exports = {
 	config: {
 		name: "adduser",
-		version: "1.5",
+		version: "2.0.0",
 		author: "frnAlt",
 		countDown: 5,
 		role: 1,
 		description: {
-			vi: "Thêm thành viên vào box chat của bạn",
-			en: "Add user to box chat of you"
+			vi: "Thêm thành viên vào nhóm WhatsApp",
+			en: "Add member to WhatsApp group chat"
 		},
 		category: "box chat",
 		guide: {
-			en: "   {pn} [link profile | uid]"
+			en: "{pn} <phone number | wa.me link | @mention>\nExamples:\n• {pn} +1234567890\n• {pn} https://wa.me/1234567890\n• {pn} @user"
 		}
 	},
 
 	langs: {
 		vi: {
 			alreadyInGroup: "Đã có trong nhóm",
-			successAdd: "- Đã thêm thành công %1 thành viên vào nhóm",
-			failedAdd: "- Không thể thêm %1 thành viên vào nhóm",
-			approve: "- Đã thêm %1 thành viên vào danh sách phê duyệt",
-			invalidLink: "Vui lòng nhập link facebook hợp lệ",
-			cannotGetUid: "Không thể lấy được uid của người dùng này",
-			linkNotExist: "Profile url này không tồn tại",
-			cannotAddUser: "Bot bị chặn tính năng hoặc người dùng này chặn người lạ thêm vào nhóm"
+			successAdd: "✅ Đã thêm thành công %1 thành viên vào nhóm",
+			failedAdd: "❌ Không thể thêm %1 thành viên vào nhóm",
+			invalidPhone: "Vui lòng nhập số điện thoại hoặc link WhatsApp hợp lệ",
+			cannotAddUser: "Không thể thêm người này vào nhóm (kiểm tra quyền quản trị viên của bot hoặc cài đặt quyền riêng tư của người dùng)"
 		},
 		en: {
 			alreadyInGroup: "Already in group",
-			successAdd: "- Successfully added %1 members to the group",
-			failedAdd: "- Failed to add %1 members to the group",
-			approve: "- Added %1 members to the approval list",
-			invalidLink: "Please enter a valid facebook link",
-			cannotGetUid: "Cannot get uid of this user",
-			linkNotExist: "This profile url does not exist",
-			cannotAddUser: "Bot is blocked or this user blocked strangers from adding to the group"
+			successAdd: "✅ Successfully added %1 member(s) to the group",
+			failedAdd: "❌ Failed to add %1 member(s) to the group",
+			invalidPhone: "Please provide a valid phone number or WhatsApp link",
+			cannotAddUser: "Cannot add user (verify bot is group admin or check user's privacy settings)"
 		}
 	},
 
 	onStart: async function ({ message, api, event, args, threadsData, getLang }) {
-		const { members, adminIDs, approvalMode } = await threadsData.get(event.threadID);
-		const botID = api.getCurrentUserID();
+		if (!event.threadID || !event.threadID.endsWith("@g.us")) {
+			return message.reply("ℹ️ This command can only be used in WhatsApp groups.");
+		}
 
-		const success = [
-			{
-				type: "success",
-				uids: []
-			},
-			{
-				type: "waitApproval",
-				uids: []
+		const targets = [];
+
+		// 1. Mentions
+		if (event.mentions && Object.keys(event.mentions).length > 0) {
+			for (const uid of Object.keys(event.mentions)) {
+				const clean = String(uid).replace(/[^0-9]/g, "");
+				if (clean) targets.push(clean);
 			}
-		];
+		}
+
+		// 2. Reply to user
+		if (event.messageReply && event.messageReply.senderID) {
+			const clean = String(event.messageReply.senderID).replace(/[^0-9]/g, "");
+			if (clean) targets.push(clean);
+		}
+
+		// 3. Arguments (phone numbers, wa.me links, JIDs)
+		for (const raw of args) {
+			let clean = raw.trim();
+			if (clean.includes("wa.me/") || clean.includes("whatsapp.com/")) {
+				const match = clean.match(/(?:wa\.me\/|phone=|\/)(\d+)/);
+				if (match && match[1]) clean = match[1];
+			}
+			clean = clean.replace(/[^0-9]/g, "");
+			if (clean.length >= 7 && !targets.includes(clean)) {
+				targets.push(clean);
+			}
+		}
+
+		if (targets.length === 0) {
+			return message.reply(getLang("invalidPhone"));
+		}
+
+		const threadInfo = await threadsData.get(event.threadID).catch(() => ({}));
+		const members = threadInfo.members || [];
+		const success = [];
 		const failed = [];
 
-		function checkErrorAndPush(messageError, item) {
-			item = item.replace(/(?:https?:\/\/)?(?:www\.)?(?:facebook|fb|m\.facebook)\.(?:com|me)/i, '');
-			const findType = failed.find(error => error.type == messageError);
-			if (findType)
-				findType.uids.push(item);
-			else
-				failed.push({
-					type: messageError,
-					uids: [item]
-				});
-		}
-
-		const regExMatchFB = /(?:https?:\/\/)?(?:www\.)?(?:facebook|fb|m\.facebook)\.(?:com|me)\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[\w\-]*\/)*([\w\-\.]+)(?:\/)?/i;
-		for (const item of args) {
-			let uid;
-			let continueLoop = false;
-
-			if (isNaN(item) && regExMatchFB.test(item)) {
-				for (let i = 0; i < 10; i++) {
-					try {
-						uid = await findUid(item);
-						break;
-					}
-					catch (err) {
-						if (err.name == "SlowDown" || err.name == "CannotGetData") {
-							await sleep(1000);
-							continue;
-						}
-						else if (i == 9 || (err.name != "SlowDown" && err.name != "CannotGetData")) {
-							checkErrorAndPush(
-								err.name == "InvalidLink" ? getLang('invalidLink') :
-									err.name == "CannotGetData" ? getLang('cannotGetUid') :
-										err.name == "LinkNotExist" ? getLang('linkNotExist') :
-											err.message,
-								item
-							);
-							continueLoop = true;
-							break;
-						}
-					}
-				}
-			}
-			else if (!isNaN(item))
-				uid = item;
-			else
+		for (const phone of targets) {
+			const jid = `${phone}@s.whatsapp.net`;
+			if (members.some(m => m.userID === jid || m.userID === phone)) {
+				failed.push({ phone, reason: getLang("alreadyInGroup") });
 				continue;
-
-			if (continueLoop == true)
-				continue;
-
-			if (members.some(m => m.userID == uid && m.inGroup)) {
-				checkErrorAndPush(getLang("alreadyInGroup"), item);
 			}
-			else {
-				try {
-					await api.addUserToGroup(uid, event.threadID);
-					if (approvalMode === true && !adminIDs.includes(botID))
-						success[1].uids.push(uid);
-					else
-						success[0].uids.push(uid);
+
+			try {
+				if (typeof api.addUserToGroup === "function") {
+					await api.addUserToGroup(jid, event.threadID);
+					success.push(phone);
+				} else {
+					failed.push({ phone, reason: "addUserToGroup not available on socket" });
 				}
-				catch (err) {
-					checkErrorAndPush(getLang("cannotAddUser"), item);
-				}
+			} catch (err) {
+				failed.push({ phone, reason: err.message || getLang("cannotAddUser") });
 			}
 		}
-
-		const lengthUserSuccess = success[0].uids.length;
-		const lengthUserWaitApproval = success[1].uids.length;
-		const lengthUserError = failed.length;
 
 		let msg = "";
-		if (lengthUserSuccess)
-			msg += `${getLang("successAdd", lengthUserSuccess)}\n`;
-		if (lengthUserWaitApproval)
-			msg += `${getLang("approve", lengthUserWaitApproval)}\n`;
-		if (lengthUserError)
-			msg += `${getLang("failedAdd", failed.reduce((a, b) => a + b.uids.length, 0))} ${failed.reduce((a, b) => a += `\n    + ${b.uids.join('\n       ')}: ${b.type}`, "")}`;
-		await message.reply(msg);
+		if (success.length > 0) {
+			msg += `${getLang("successAdd", success.length)}\n` + success.map(s => `  + ${s}`).join("\n");
+		}
+		if (failed.length > 0) {
+			if (msg) msg += "\n\n";
+			msg += `${getLang("failedAdd", failed.length)}\n` + failed.map(f => `  - ${f.phone}: ${f.reason}`).join("\n");
+		}
+
+		return message.reply(msg);
 	}
 };

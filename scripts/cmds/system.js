@@ -8,7 +8,6 @@ let GIFEncoder = null;
 try { GIFEncoder = require("gif-encoder-2"); } catch (e) {}
 
 const W = 1200, H = 700, G = 10;
-const FB_ACCESS_TOKEN ="350685531728|62f8ce9f74b12f84c123cc23437a4a32";
 
 const PAL = {
   bg0: "#091017",
@@ -50,11 +49,14 @@ const avatarCache = new Map();
 async function getAvatar(uid, size = 256) {
   if (avatarCache.has(uid)) return avatarCache.get(uid);
   try {
-    const url = `https://graph.facebook.com/${uid}/picture?height=${size}&width=${size}&redirect=false&access_token=${FB_ACCESS_TOKEN}`;
-    const { data } = await axios.get(url);
-    const imgURL = data?.data?.url;
-    if (!imgURL) return null;
-    const imgBuf = (await axios.get(imgURL, { responseType: "arraybuffer" })).data;
+    let imgURL = null;
+    if (typeof global.utils?.getAvatar === "function") {
+      imgURL = await global.utils.getAvatar(null, uid);
+    }
+    if (!imgURL) {
+      imgURL = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}&size=${size}`;
+    }
+    const imgBuf = (await axios.get(imgURL, { responseType: "arraybuffer", timeout: 10000 })).data;
     const img = await Canvas.loadImage(imgBuf);
     avatarCache.set(uid, img);
     return img;

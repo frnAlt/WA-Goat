@@ -62,26 +62,25 @@ function extractImageUrlFromEvent(event, args = []) {
   return null;
 }
 
-const FB_CLIENT_TOKEN = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
-
 async function getUserAvatarUrl(uid, api, usersData) {
-  const candidateUrls = [
-    `https://graph.facebook.com/${uid}/picture?width=1500&height=1500&access_token=${FB_CLIENT_TOKEN}`,
-    `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${FB_CLIENT_TOKEN}`,
-    `https://graph.facebook.com/${uid}/picture?type=large`
-  ];
-
-  for (const url of candidateUrls) {
-    try {
-      const res = await axios.head(url, { timeout: 6000, validateStatus: s => s === 200 || s === 302 });
-      if (res.status === 200 || res.status === 302) return url;
-    } catch (_) {}
-  }
-
   if (usersData && typeof usersData.getAvatarUrl === "function") {
     try {
       const dbUrl = await usersData.getAvatarUrl(uid);
       if (dbUrl) return dbUrl;
+    } catch (_) {}
+  }
+
+  if (global.utils?.getAvatar) {
+    try {
+      const pfp = await global.utils.getAvatar(api, uid);
+      if (pfp) return pfp;
+    } catch (_) {}
+  }
+
+  if (api && typeof api.getProfilePicture === "function") {
+    try {
+      const pic = await api.getProfilePicture(uid);
+      if (pic) return pic;
     } catch (_) {}
   }
 
@@ -93,7 +92,7 @@ async function getUserAvatarUrl(uid, api, usersData) {
     } catch (_) {}
   }
 
-  return `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${FB_CLIENT_TOKEN}`;
+  return `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}`;
 }
 
 async function downloadToBuffer(fileUrl) {

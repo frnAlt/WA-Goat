@@ -241,18 +241,18 @@ module.exports = {
         authorName = (await usersData.getName(authorUid).catch(() => null)) || `User ${authorUid}`;
       }
 
-      const authorAvatar = global.utils?.getAvatarUrl
-        ? global.utils.getAvatarUrl(authorUid)
-        : (await usersData.getAvatarUrl(authorUid).catch(() => null)) || `https://graph.facebook.com/${authorUid}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+      const authorAvatar = (await usersData.getAvatarUrl(authorUid).catch(() => null))
+        || (typeof global.utils?.getAvatar === "function" ? await global.utils.getAvatar(api, authorUid) : null)
+        || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(authorUid)}&size=512`;
 
       let commenterAvatar = null;
       if (commenterUid) {
         if (!commenterName) {
           commenterName = (await usersData.getName(commenterUid).catch(() => null)) || `User ${commenterUid}`;
         }
-        commenterAvatar = global.utils?.getAvatarUrl
-          ? global.utils.getAvatarUrl(commenterUid)
-          : (await usersData.getAvatarUrl(commenterUid).catch(() => null)) || `https://graph.facebook.com/${commenterUid}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+        commenterAvatar = (await usersData.getAvatarUrl(commenterUid).catch(() => null))
+          || (typeof global.utils?.getAvatar === "function" ? await global.utils.getAvatar(api, commenterUid) : null)
+          || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(commenterUid)}&size=512`;
       } else if (commenterName) {
         commenterAvatar = "https://i.ibb.co/bBSpr5v/143086968-2856368904622192-1959732218791162458-n.png";
       }

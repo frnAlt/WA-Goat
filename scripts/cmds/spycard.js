@@ -104,9 +104,14 @@ module.exports = {
 
       let avatar = null;
       try {
-        avatar = await Canvas.loadImage(
-          `https://graph.facebook.com/${uid}/picture?height=512&width=512&access_token=350685531728|62f8ce9f74b12f84c123cc23437a4a32`
-        );
+        let avatarUrl = (typeof global.utils?.getAvatar === "function") ? await global.utils.getAvatar(api, uid) : null;
+        if (!avatarUrl && typeof api?.getProfilePicture === "function") {
+          avatarUrl = await api.getProfilePicture(uid);
+        }
+        if (!avatarUrl) {
+          avatarUrl = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}&size=512`;
+        }
+        avatar = await Canvas.loadImage(avatarUrl);
       } catch {}
 
       for (let f = 0; f < FRAMES; f++) {

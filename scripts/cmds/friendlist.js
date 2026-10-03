@@ -43,7 +43,7 @@ module.exports = {
       if (api.getFriendsList) {
         api.getFriendsList((err, data) => {
           if (err || !data) {
-            return message.reply("❌ Unable to fetch friends list from Facebook.");
+            return message.reply("❌ Unable to fetch contacts list.");
           }
 
           const page = parseInt(args[0]) || 1;
@@ -52,7 +52,7 @@ module.exports = {
           const startIndex = (page - 1) * friendsPerPage;
           const friendsToShow = data.slice(startIndex, startIndex + friendsPerPage);
 
-          let msg = `👥 FRIENDS LIST (Page ${page}/${totalPages})\n📊 Total Friends: ${data.length}\n\n`;
+          let msg = `👥 CONTACTS LIST (Page ${page}/${totalPages})\n📊 Total Contacts: ${data.length}\n\n`;
           friendsToShow.forEach((friend, idx) => {
             msg += `${startIndex + idx + 1}. ${friend.fullName || friend.name}\n   👤 ID: ${friend.userID || friend.id}\n`;
           });
@@ -62,7 +62,7 @@ module.exports = {
         return;
       }
 
-      return message.reply("⚠️ FCA getFriendsList API method is not available on this session.");
+      return message.reply("⚠️ Contacts list method is not available on this session.");
     } catch (err) {
       return message.reply("❌ Friendlist Error: " + err.message);
     }

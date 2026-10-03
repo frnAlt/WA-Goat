@@ -94,7 +94,7 @@ module.exports = {
                         case "unban":
                         case "-u": {
                                 const threadID = args[1];
-                                if (!threadID || isNaN(threadID)) {
+                                if (!threadID) {
                                         return message.reply(getLang("invalidThreadID"));
                                 }
 

@@ -10,35 +10,37 @@ module.exports = {
             en: "Send friend request to a user"
         },
         description: {
-            en: "Send friend request to a Facebook user by their ID or profile URL"
+            en: "Send contact card / friend connect to a WhatsApp user by phone number or wa.me URL"
         },
         category: "owner",
         guide: {
-            en: "{pn} <userID> - Send friend request to user by ID\n{pn} <profile URL> - Send friend request to user by profile URL"
+            en: "{pn} <phoneNumber> - Add user by phone number\n{pn} <wa.me URL> - Add user by WhatsApp link"
         }
     },
 
     ST: async function ({ api, message, args, getLang }) {
         try {
             if (!args[0]) {
-                return message.reply("❌ Please provide a user ID or profile URL.\n\nUsage:\n• !sendfriendrequest 61579896599103\n• !sendfriendrequest https://www.facebook.com/profile.php?id=61579896599103");
+                return message.reply("❌ Please provide a phone number or WhatsApp link.\n\nUsage:\n• !addfriend 8801712345678\n• !addfriend https://wa.me/8801712345678");
             }
 
-            let userID = args[0];
+            let userID = args[0].replace(/^@/, "").trim();
 
-            // Extract user ID from Facebook profile URL if provided
-            if (userID.includes("facebook.com")) {
-                const urlMatch = userID.match(/(?:id=|profile\.php\?id=|facebook\.com\/)(\d+)/);
+            // Extract phone number from wa.me or WhatsApp link
+            if (userID.includes("wa.me") || userID.includes("whatsapp.com")) {
+                const urlMatch = userID.match(/(?:wa\.me\/|phone=|\/)(\d+)/);
                 if (urlMatch && urlMatch[1]) {
                     userID = urlMatch[1];
-                } else {
-                    return message.reply("❌ Could not extract user ID from the provided URL. Please check the URL format.");
                 }
+            } else if (userID.includes("@s.whatsapp.net")) {
+                userID = userID.split("@")[0];
             }
 
-            // Validate that userID contains only numbers
-            if (!/^\d+$/.test(userID)) {
-                return message.reply("❌ Invalid user ID format. Please provide a valid numeric user ID or Facebook profile URL.");
+            // Strip non-numeric characters for phone number
+            userID = userID.replace(/[^0-9]/g, "");
+
+            if (!userID || userID.length < 6) {
+                return message.reply("❌ Invalid phone number or user ID format.");
             }
 
 

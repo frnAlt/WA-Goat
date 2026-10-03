@@ -466,7 +466,7 @@ async function normalizeMessage(sock, rawMsg) {
     attachments: currentAttachments,
     mentions: mentionsObj,
     mentionedJid: m.mentionedJid || [],
-    type: m.isGroup ? 'message' : 'message_reply',
+    type: m.quoted ? 'message_reply' : 'message',
     message: messageHelper,
     m,
     raw: rawMsg,

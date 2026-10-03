@@ -364,7 +364,9 @@ module.exports = {
 						`✨ EXP: ${exp.toLocaleString()} / ${nextLevelExp.toLocaleString()}\n` +
 						`╚════════════════════════════════════════╝`;
 
-					const avatarUrl = await usersData.getAvatarUrl(userID).catch(() => `https://graph.facebook.com/${userID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`);
+					const avatarUrl = (await usersData.getAvatarUrl(userID).catch(() => null))
+						|| (typeof global.utils?.getAvatar === "function" ? await global.utils.getAvatar(api, userID) : null)
+						|| `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(userID)}&size=512`;
 					const avatarStream = await global.utils.getStreamFromURL(avatarUrl, `avatar_${userID}.jpg`).catch(() => null);
 
 					await message.reply({
@@ -377,7 +379,7 @@ module.exports = {
 	},
 
 	onChat: async function ({ usersData, event }) {
-		if (!event.senderID || isNaN(event.senderID)) return;
+		if (!event.senderID) return;
 		try {
 			const user = await usersData.get(event.senderID).catch(() => null);
 			let exp = typeof user?.exp === "number" && !isNaN(user.exp) ? user.exp : 0;

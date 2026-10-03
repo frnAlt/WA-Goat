@@ -22,7 +22,6 @@ module.exports = {
 
   onStart: async function ({ api, event, message, args }) {
     let imageUrl = "";
-    const token = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
 
     // 1. Check for image attachment in replied message
     if (event.messageReply?.attachments?.length > 0) {
@@ -44,11 +43,11 @@ module.exports = {
     // 2. Check for mentioned user
     if (!imageUrl && event.mentions && Object.keys(event.mentions).length > 0) {
       const targetUID = Object.keys(event.mentions)[0];
-      imageUrl = `https://graph.facebook.com/${targetUID}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = (await global.utils?.getAvatar?.(api, targetUID)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(targetUID)}`;
     }
     // 3. Check for replied message sender
     else if (!imageUrl && event.messageReply?.senderID) {
-      imageUrl = `https://graph.facebook.com/${event.messageReply.senderID}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = (await global.utils?.getAvatar?.(api, event.messageReply.senderID)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(event.messageReply.senderID)}`;
     }
     // 4. Check for direct URL argument
     else if (!imageUrl && args[0] && args[0].startsWith("http")) {
@@ -56,7 +55,7 @@ module.exports = {
     }
     // 5. Default to sender's own avatar
     else if (!imageUrl) {
-      imageUrl = `https://graph.facebook.com/${event.senderID}/picture?width=720&height=720&access_token=${token}`;
+      imageUrl = (await global.utils?.getAvatar?.(api, event.senderID)) || `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(event.senderID)}`;
     }
 
     if (api.setMessageReaction) {

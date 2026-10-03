@@ -1170,16 +1170,15 @@ function extractImageUrl(event, args = [], options = {}) {
 
         // 5. Mentioned user or sender avatar (ONLY when explicitly allowed)
         if (allowAvatar) {
-                const token = "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662";
                 if (event?.mentions && Object.keys(event.mentions).length > 0) {
                         const uid = Object.keys(event.mentions)[0];
-                        return `https://graph.facebook.com/${uid}/picture?width=720&height=720&access_token=${token}`;
+                        return `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}`;
                 }
                 if (event?.messageReply?.senderID) {
-                        return `https://graph.facebook.com/${event.messageReply.senderID}/picture?width=720&height=720&access_token=${token}`;
+                        return `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(event.messageReply.senderID)}`;
                 }
                 if (fallbackSender && event?.senderID) {
-                        return `https://graph.facebook.com/${event.senderID}/picture?width=720&height=720&access_token=${token}`;
+                        return `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(event.senderID)}`;
                 }
         }
 
@@ -1540,14 +1539,8 @@ const utils = {
             return await api.sendMessage(form, targetUID, options.callback, undefined, false);
         },
         privateThreadManager: require("./func/privateThreadManager.js"),
-        parseCookies: (() => {
-            try { return require("./fca/src/utils/formatters/value/formatCookie").parseUniversalCookies; }
-            catch (_) { return (c) => Array.isArray(c) ? c : []; }
-        })(),
-        parseUniversalCookies: (() => {
-            try { return require("./fca/src/utils/formatters/value/formatCookie").parseUniversalCookies; }
-            catch (_) { return (c) => Array.isArray(c) ? c : []; }
-        })(),
+        parseCookies: (c) => Array.isArray(c) ? c : [],
+        parseUniversalCookies: (c) => Array.isArray(c) ? c : [],
         ...require("./func")
 };
 

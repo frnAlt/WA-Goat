@@ -362,7 +362,7 @@ module.exports = async (api) => {
                         const captures = [];
                         const capture = __captureDashboardReply(captures);
                         const ctx = global.GoatBot?.dashboardContext || {};
-                        const activeApi = ctx.api || api || global.GoatBot?.fcaApi || {
+                        const activeApi = ctx.api || api || global.GoatBot?.wcaApi || global.GoatBot?.fcaApi || {
                                 getCurrentUserID: () => global.GoatBot?.botID || "dashboard",
                                 getUserInfo: async () => ({}),
                                 getThreadInfo: async (threadID) => ({ threadID, source: "dashboard" }),
@@ -1046,11 +1046,11 @@ module.exports = async (api) => {
         // Enhanced stats endpoint with real-time data
         app.get("/stats", async (req, res) => {
                 try {
-                        let fcaVersion;
+                        let wcaVersion;
                         try {
-                                fcaVersion = require("../floppa-wca/package.json").version;
+                                wcaVersion = require("../floppa-wca/package.json").version;
                         } catch (e) {
-                                fcaVersion = "2.0.0";
+                                wcaVersion = "2.0.0";
                         }
 
                         const totalThread = global.db?.threadsData ? (await global.db.threadsData.getAll()).filter(t => t.threadID.toString().length > 15).length : 0;
@@ -1065,7 +1065,8 @@ module.exports = async (api) => {
 
                         res.setHeader('Cache-Control', 'no-cache');
                         res.json({
-                                fcaVersion,
+                                wcaVersion,
+                                fcaVersion: wcaVersion,
                                 totalThread,
                                 totalUser,
                                 prefix,

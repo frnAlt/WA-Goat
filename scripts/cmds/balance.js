@@ -51,7 +51,13 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 
 async function getProfilePicture(uid) {
     try {
-        const avatarURL = `https://graph.facebook.com/${uid}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+        let avatarURL = null;
+        if (typeof global.utils?.getAvatar === "function") {
+            avatarURL = await global.utils.getAvatar(null, uid);
+        }
+        if (!avatarURL) {
+            avatarURL = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(uid)}&size=512`;
+        }
         const response = await axios.get(avatarURL, { responseType: 'arraybuffer', timeout: 10000 });
         return await loadImage(Buffer.from(response.data));
     } catch (error) {
