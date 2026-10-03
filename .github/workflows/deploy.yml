@@ -148,12 +148,7 @@ jobs:
             echo "✅ Loaded WA_WEB_ACCESS_TOKEN into environment (masked for security)"
 
             # Automatically populate wa_web.json for token auto-restoration
-            cat << EOF > wa_web.json
-{
-  "wa_web_access_token": "$TOKEN",
-  "description": "Configured dynamically on GitHub runner"
-}
-EOF
+            node -e "const fs = require('fs'); fs.writeFileSync('wa_web.json', JSON.stringify({ wa_web_access_token: process.argv[1], description: 'Configured dynamically on GitHub runner' }, null, 2));" "$TOKEN"
             echo "✅ Synchronized access token into wa_web.json"
           elif [ -n "$WA_WEB_JSON" ]; then
             echo "$WA_WEB_JSON" > wa_web.json
