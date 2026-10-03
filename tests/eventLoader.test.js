@@ -5,7 +5,7 @@ const eventManager = require('../src/core/events');
 
 test('Event Manager and Loader', async (t) => {
   await t.test('should load modular events from directory', () => {
-    const eventDir = path.resolve(__dirname, '../src/events');
+    const eventDir = path.resolve(__dirname, '../scripts/events');
     const count = eventManager.loadFromDirectory(eventDir);
     assert.ok(count > 0, `Loaded ${count} events`);
 

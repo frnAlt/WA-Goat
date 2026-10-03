@@ -46,24 +46,14 @@ async function main() {
   global.GoatBot.config = global.GoatBot.config || config;
   global.GoatBot.configCommands = global.GoatBot.configCommands || { commandUnload: [], commandEventUnload: [], commandAllowLoad: [] };
 
-  // 2. Discover and Load Commands
-  const commandsDir = path.resolve(__dirname, 'commands');
-  commandManager.loadFromDirectory(commandsDir);
-
+  // 2. Discover and Load Commands (Floppa / GoatBot scripts structure)
   const scriptsCmdsDir = path.resolve(process.cwd(), 'scripts/cmds');
-  if (require('fs').existsSync(scriptsCmdsDir)) {
-    commandManager.loadFromDirectory(scriptsCmdsDir);
-  }
+  commandManager.loadFromDirectory(scriptsCmdsDir);
   logger.info(`Loaded ${commandManager.getAll().length} unique commands dynamically across ${commandManager.getCategories().size} categories.`);
 
   // 3. Discover and Load Events
-  const eventsDir = path.resolve(__dirname, 'events');
-  let loadedEventCount = eventManager.loadFromDirectory(eventsDir);
-
   const scriptsEventsDir = path.resolve(process.cwd(), 'scripts/events');
-  if (require('fs').existsSync(scriptsEventsDir)) {
-    loadedEventCount += eventManager.loadFromDirectory(scriptsEventsDir);
-  }
+  const loadedEventCount = eventManager.loadFromDirectory(scriptsEventsDir);
   logger.info(`Loaded ${loadedEventCount} modular events.`);
 
   // 4. Initialize Background Scheduler & Cleaners

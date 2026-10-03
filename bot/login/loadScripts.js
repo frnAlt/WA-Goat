@@ -22,22 +22,40 @@ function safeRequire(filePath) {
   }
 }
 
+function getJsFilesRecursively(dir) {
+  let results = [];
+  if (!fs.existsSync(dir)) return results;
+  const list = fs.readdirSync(dir);
+  for (const item of list) {
+    const fullPath = path.join(dir, item);
+    const stat = fs.statSync(fullPath);
+    if (stat.isDirectory()) {
+      if (['assets', 'cache', 'node_modules', '.git', 'fonts', 'json'].includes(item)) continue;
+      results = results.concat(getJsFilesRecursively(fullPath));
+    } else if (item.endsWith('.js') && !item.endsWith('.test.js')) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
 /**
- * Load all command files from scripts/cmds/.
+ * Load all command files from scripts/cmds/ (including category subdirectories).
  * Skips files listed in configCommands.commandUnload.
  * @param {object} api
  */
 async function loadCommands(api) {
   const unload  = (global.ST.configCommands.commandUnload || []).map(n => n.toLowerCase());
-  const files   = fs.readdirSync(CMDS_DIR).filter(f => f.endsWith(".js"));
+  const filePaths = getJsFilesRecursively(CMDS_DIR);
 
   let loaded = 0;
   let skipped = 0;
   let failed = 0;
 
-  spinner.start(`Loading commands (0/${files.length})…`);
+  spinner.start(`Loading commands (0/${filePaths.length})…`);
 
-  for (const file of files) {
+  for (const filePath of filePaths) {
+    const file = path.basename(filePath);
     const name = file.toLowerCase();
     // Skip if in unload list
     if (unload.includes(name) || unload.includes(name.replace(".js", ""))) {
@@ -45,8 +63,6 @@ async function loadCommands(api) {
       skipped++;
       continue;
     }
-
-    const filePath = path.join(CMDS_DIR, file);
     const mod      = safeRequire(filePath);
 
     if (mod && mod.__error) {
@@ -99,15 +115,16 @@ async function loadCommands(api) {
  */
 async function loadEvents(api) {
   const unload = (global.ST.configCommands.commandEventUnload || []).map(n => n.toLowerCase());
-  const files  = fs.readdirSync(EVENTS_DIR).filter(f => f.endsWith(".js"));
+  const filePaths = getJsFilesRecursively(EVENTS_DIR);
 
   let loaded = 0;
   let skipped = 0;
   let failed = 0;
 
-  spinner.start(`Loading events (0/${files.length})…`);
+  spinner.start(`Loading events (0/${filePaths.length})…`);
 
-  for (const file of files) {
+  for (const filePath of filePaths) {
+    const file = path.basename(filePath);
     const name = file.toLowerCase();
     if (unload.includes(name) || unload.includes(name.replace(".js", ""))) {
       spinner.update(`Skipping event: ${file}`);
@@ -115,7 +132,6 @@ async function loadEvents(api) {
       continue;
     }
 
-    const filePath = path.join(EVENTS_DIR, file);
     const mod      = safeRequire(filePath);
 
     if (mod && mod.__error) {

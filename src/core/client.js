@@ -14,7 +14,18 @@ const {
 const pino = require('pino');
 const path = require('path');
 const fs = require('fs-extra');
-const NodeCache = require('node-cache');
+let NodeCache;
+try {
+  NodeCache = require('node-cache');
+} catch (_) {
+  NodeCache = class SimpleCache {
+    constructor() { this.cache = new Map(); }
+    get(k) { return this.cache.get(k); }
+    set(k, v) { this.cache.set(k, v); return this; }
+    del(k) { return this.cache.delete(k); }
+    flushAll() { this.cache.clear(); }
+  };
+}
 const qrcode = require('qrcode-terminal');
 const config = require('../config');
 const logger = require('../utils/logger');

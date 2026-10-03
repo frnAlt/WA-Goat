@@ -5,7 +5,7 @@ const commandManager = require('../src/core/command');
 
 test('Command Manager and Loader', async (t) => {
   await t.test('should load commands from directory dynamically', () => {
-    const cmdDir = path.resolve(__dirname, '../src/commands');
+    const cmdDir = path.resolve(__dirname, '../scripts/cmds');
     const count = commandManager.loadFromDirectory(cmdDir);
     assert.ok(count > 0, `Loaded ${count} commands`);
     assert.ok(commandManager.getAll().length >= count);

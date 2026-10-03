@@ -28,18 +28,25 @@ class EventManager {
   loadFromDirectory(dirPath) {
     if (!fs.existsSync(dirPath)) return 0;
     let count = 0;
-    const files = fs.readdirSync(dirPath).filter(f => f.endsWith('.js') && !f.endsWith('.test.js'));
+    const items = fs.readdirSync(dirPath);
 
-    for (const file of files) {
-      const fullPath = path.join(dirPath, file);
-      try {
-        delete require.cache[require.resolve(fullPath)];
-        const mod = require(fullPath);
-        if (this.register(mod, fullPath)) {
-          count++;
+    for (const item of items) {
+      const fullPath = path.resolve(dirPath, item);
+      const stat = fs.statSync(fullPath);
+
+      if (stat.isDirectory()) {
+        if (['assets', 'data', 'node_modules', '.git'].includes(item)) continue;
+        count += this.loadFromDirectory(fullPath);
+      } else if (item.endsWith('.js') && !item.endsWith('.test.js')) {
+        try {
+          delete require.cache[require.resolve(fullPath)];
+          const mod = require(fullPath);
+          if (this.register(mod, fullPath)) {
+            count++;
+          }
+        } catch (err) {
+          logger.warn(`[EVENT_LOADER] Error loading ${item}:`, err.message);
         }
-      } catch (err) {
-        logger.warn(`[EVENT_LOADER] Error loading ${file}:`, err.message);
       }
     }
     return count;
