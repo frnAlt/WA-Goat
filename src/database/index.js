@@ -36,6 +36,20 @@ const database = {
   async init() {
     logger.info('Database initialized (Storage:', config.database.type, ')');
 
+    // MongoDB connection string support
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || config.database?.uri;
+    if (mongoUri || config.database?.type === 'mongodb') {
+      try {
+        const mongoose = require('mongoose');
+        if (mongoUri && typeof mongoose.connect === 'function') {
+          await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+          logger.info('[DATABASE] Successfully connected to MongoDB database!');
+        }
+      } catch (mongoErr) {
+        logger.warn(`[DATABASE] MongoDB connection note: ${mongoErr.message}. Falling back to local storage.`);
+      }
+    }
+
     // Wire up global.db, global.ST.DB, global.userData, global.threadsData
     global.db = global.db || {};
     if (!global.db.allUserData) {

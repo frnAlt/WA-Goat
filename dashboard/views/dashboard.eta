@@ -3,12 +3,12 @@
 <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title><%= it.config.nickNameBot || "ST Bot" %> — Dashboard</title>
+        <title><%= it.config.botName || "WA-Goat" %> — Dashboard</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="/css/dashboard.css">
-        <link rel="icon" type="image/png" href="/images/st.png">
+        <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
 </head>
 <body>
 
@@ -17,8 +17,8 @@
         <!-- ============ SIDEBAR ============ -->
         <aside class="sidebar" id="sidebar">
                 <div class="brand">
-                        <div class="logo">ST</div>
-                        <div class="name"><b><%= it.config.nickNameBot || "ST Bot" %></b><span>Control Panel</span></div>
+                        <div class="logo">🐐</div>
+                        <div class="name"><b><%= it.config.botName || "WA-Goat" %></b><span>Control Panel</span></div>
                 </div>
 
                 <div class="nav-section">Workspace</div>
@@ -244,12 +244,12 @@
                                         </div>
                                         <span class="stai-status" id="staiStatus"><span></span>Ready</span>
                                 </div>
-                                <div class="stai-messages" id="staiMessages">
-                                        <div class="stai-message assistant">
-                                                <div class="avatar">ST</div>
-                                                <div class="bubble">STAI ready. Ask normally, upload an image, or mention project files with @.</div>
-                                        </div>
-                                </div>
+				<div class="stai-messages" id="staiMessages">
+					<div class="stai-message assistant">
+						<div class="avatar">🐐</div>
+						<div class="bubble">AI Assistant ready. Ask normally, upload an image, or mention project files with @.</div>
+					</div>
+				</div>
                                 <div class="stai-selected" id="staiSelectedFiles"></div>
                                 <div class="stai-images" id="staiImagePreview"></div>
                                 <form class="stai-composer" id="staiForm">

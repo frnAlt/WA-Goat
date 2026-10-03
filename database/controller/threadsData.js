@@ -27,7 +27,7 @@ const taskQueue = new TaskQueue(function (task, callback) {
         }
 });
 
-const { creatingThreadData } = global.client.database;
+const { creatingThreadData = [] } = (global.client && global.client.database) || {};
 
 module.exports = async function (databaseType, threadModel, api, fakeGraphql) {
         let Threads = [];

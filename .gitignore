@@ -1,39 +1,50 @@
-# Node modules
+# Node modules and package managers
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.pnpm-store/
 
-# Environment and sensitive files (API Keys, Tokens & Secrets)
+# Environment files and API keys
 .env
-.env.local
-.env.*.local
-.env.production
-.env.development
+.env*
+!.env.example
 api-keys.json
 credentials.json
 secrets.json
-.secrets
+.secrets/
+*.key
+*.pem
+*.crt
+*.cert
+*.pfx
+*.p12
+id_rsa*
+id_ed25519*
+*token*
+!src/commands/owner/token.js
+!scripts/cmds/owner/token.js
+!tests/waWebAuth.test.js
 
-# Authentication & Sessions (WhatsApp & WCA Auth)
+# WhatsApp Authentication & Active Sessions
 auth/
 wca_auth/
 session/
 sessions/
 *.session
+session.zip
 account.txt
-account.txt2
+account.txt*
 acc.txt
+acc.txt*
 wa_web.json
+!wa_web.example.json
 accounts.json
 appstate.json
 cookies.json
-*.pem
-*.key
-*.cert
 
-# Temporary and cache
+# Temporary files and operational cache
 temp/
 tmp/
 .cache/
@@ -43,31 +54,33 @@ downloads/
 restart.txt
 cache/restart.txt
 
-# Logs
+# Log files
 logs/
 *.log
 
-# Databases & local persistent data
+# Databases & local persistent runtime data
 data/*.json
+!data/.gitkeep
 data/database.sqlite
 data/sqlite.db
 data/*.sqlite
 data/*.db
 data/backups/
-!data/.gitkeep
 database/data/*.json
+!database/data/.gitkeep
 database/data/*.sqlite
 database/data/*.db
 database/json/*.json
 *.bak
+*.corrupt.*
 
-# Build and deployment artifacts
+# Build, coverage and deployment artifacts
 .vercel/
 dist/
 build/
 coverage/
 
-# System / OS
+# System and OS files
 .DS_Store
 Thumbs.db
-EOF
+desktop.ini

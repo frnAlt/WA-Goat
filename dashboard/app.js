@@ -1312,7 +1312,7 @@ module.exports = async (api) => {
                 res.status(500).send("Internal Server Error");
         });
 
-        const PORT = config.dashBoard.port || config.serverUptime.port || 3001;
+        const PORT = parseInt(process.env.PORT, 10) || config?.dashBoard?.port || config?.serverUptime?.port || 3000;
 
         // Enhanced URL detection for multiple platforms
         let dashBoardUrl;

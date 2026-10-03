@@ -40,6 +40,20 @@ checkDir(path.resolve(__dirname, '../floppa-wca/src'));
 checkDir(path.resolve(__dirname, '../scripts'));
 checkDir(path.resolve(__dirname, '../func'));
 
+const rootFiles = ['index.js', 'Goat.js', 'Floppa.js', 'ST.js', 'utils.js'];
+for (const file of rootFiles) {
+  const full = path.resolve(__dirname, '..', file);
+  if (fs.existsSync(full)) {
+    totalFiles++;
+    try {
+      execSync(`node -c "${full}"`, { stdio: 'pipe' });
+    } catch (err) {
+      console.error(`❌ Syntax error in ${full}:`, err.message);
+      errors++;
+    }
+  }
+}
+
 console.log(`✅ Checked ${totalFiles} JavaScript files.`);
 if (errors === 0) {
   console.log('🎉 0 syntax errors detected! All modules parsed cleanly.\n');

@@ -154,22 +154,43 @@ Type: !help <command> for details
 
 ---
 
-## 🚀 Running the Bot
+## 🚀 Running the Bot & Custom Run Options
 
-WA-Goat provides simple npm commands:
+WA-Goat provides specialized npm execution options tailored for development, deployment, and testing:
 
 ```bash
 # 1. Standard Production Start (Baileys v7 + Floppa-WCA + Web Dashboard)
 npm start
 # OR: node src/index.js
 
-# 2. Development Mode with Auto-Reload
+# 2. Force Pairing Code Mode (headless, no QR scanning needed)
+npm run start:pair
+
+# 3. Force Terminal QR Code Mode
+npm run start:qr
+
+# 4. Headless Execution (Runs bot engine with web dashboard disabled)
+npm run start:headless
+
+# 5. Floppa / ST Bot Legacy Entrypoint
+npm run start:floppa
+
+# 6. Classic GoatBot Entrypoint
+npm run start:goat
+
+# 7. Standalone Web Dashboard Server
+npm run start:dashboard
+
+# 8. MongoDB Storage Mode (Optional with auto JSON fallback)
+npm run start:mongo
+
+# 9. Development Mode with Auto-Reloading File Watcher
 npm run dev
 
-# 3. Quality & Syntax Diagnostic Suite
+# 10. Codebase Syntax & Quality Diagnostic (600+ JavaScript modules)
 npm run check
 
-# 4. Automated Unit Test Suite
+# 11. Automated Unit Test Suite (53+ unit & integration tests)
 npm test
 ```
 
@@ -361,6 +382,39 @@ sudo systemctl start wa-goat
 | **[WCA.md](WCA.md)** | Full WhatsApp Chat API reference with all 42+ methods, parameters, and examples. |
 | **[DASHBOARD.md](DASHBOARD.md)** | Detailed guide for the Web Dashboard, live terminal streaming, and STAI file explorer. |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)** | Guidelines for writing commands, testing, and submitting pull requests. |
+
+---
+
+## ✨ Features & Architecture Breakdown
+
+WA-Goat combines modern microservice architecture with complete WhatsApp feature coverage:
+
+### 1. 🤖 Multi-Engine Core & Compatibility
+* **Baileys v7.0.0-rc14 Socket**: Full official WhatsApp multi-device protocol support with automated keepalive pings and exponential reconnect backoff.
+* **Native Floppa-WCA Engine**: Zero-external-npm-dependency WhatsApp Chat API providing FCA/Messenger callback syntax (`sendMessage`, `sendMedia`, `getGroupInfo`, `listenMqtt`).
+* **Universal Command Invocation**: Run commands seamlessly across both group chats and private 1-on-1 DMs without requiring manual prefix typing.
+* **Triple Runner Compatibility**: Seamlessly execute via modern Baileys engine (`npm start`), legacy Floppa runner (`npm run start:floppa`), or classic GoatBot runner (`npm run start:goat`).
+
+### 2. 🔑 WhatsApp Web Access Token & Session Portability
+* **`WA_WEB_ACCESS_TOKEN` Support**: Serialize your full authentication state into a single secure string (`WA_WEB~...`) or environment variable.
+* **`wa_web.json` File Support**: Load credentials directly from a local or cloud JSON credentials file (reference format provided in `wa_web.example.json`).
+* **GitHub Actions & Cloud Secret Integration**: Deploy directly to headless cloud runners (Vercel, Render, Heroku, Railway, VPS, GitHub Actions) using secrets without committing sensitive `auth/` directories.
+
+### 3. 💾 Flexible & Optional Database Layer
+* **MongoDB Connection String Support**: Plug in your MongoDB Atlas or self-hosted URI via `MONGODB_URI`, `MONGO_URI`, or `config.json`.
+* **Zero-Crash Graceful Fallback**: MongoDB is completely optional. If MongoDB is unreachable or no URI is provided, WA-Goat automatically falls back to portable JSON database storage without crashing or halting startup.
+* **Dual Controller Architecture**: Full support for thread settings, warnings, user economy, bank balances, and global state across both JSON and MongoDB engines.
+
+### 4. 🖥️ Modern Web Dashboard & Telemetry
+* **Sleek Inline Vector UI**: Brand new SVG-based dashboard interface, completely eliminating heavy legacy developer assets.
+* **Real-Time Log Streaming**: Native Server-Sent Events (SSE) pipe live terminal logs directly to your browser in real time.
+* **STAI File System Manager**: Inspect and manage scripts, logs, and configuration files securely from the web UI.
+* **Optional Password Authentication**: Lock down the dashboard with configurable PIN/password protection or run headless with `npm run start:headless`.
+
+### 5. 🛡️ Security, Safety, and Clean Repository
+* **Strict `.gitignore` Policy**: Hardened repository configuration prevents accidental leakage of API keys, session tokens, database files, and credentials.
+* **International English Standardization**: Standardized English logs, interactive help menu cards, and diagnostics for global consistency.
+* **Comprehensive Test Coverage**: 53+ automated unit and integration tests with zero syntax errors across 600+ JavaScript files (`npm run check` and `npm test`).
 
 ---
 

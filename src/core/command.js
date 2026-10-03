@@ -286,17 +286,41 @@ class CommandManager {
           });
         } else if (typeof rawCommand.entry === 'function' || typeof command.entry === 'function') {
           const entryFn = rawCommand.entry || command.entry;
+          const axios = require('axios');
+          const outputObj = {
+            reply: async (msg) => ctx.message.reply(msg),
+            send: async (msg) => ctx.message.send(msg),
+            reaction: async (emoji) => {
+              if (ctx.message?.reaction) return ctx.message.reaction(emoji);
+              return apiShim.setMessageReaction(emoji, ctx.messageID);
+            },
+            react: async (emoji) => {
+              if (ctx.message?.reaction) return ctx.message.reaction(emoji);
+              return apiShim.setMessageReaction(emoji, ctx.messageID);
+            },
+            req: async (url, opts = {}) => {
+              const res = await axios(url, opts);
+              return res.data;
+            },
+            wentWrong: async (msg = 'Something went wrong while processing your request.') => ctx.message.reply(`❌ | ${msg}`),
+            error: async (msg) => ctx.message.reply(`❌ | ${msg}`),
+            replyStyled: async (msg) => ctx.message.reply(msg),
+            sendStyled: async (msg) => ctx.message.send(msg),
+            edit: async (msgId, newText) => apiShim.editMessage(ctx.chat, msgId, newText),
+            unsend: async (msgId) => apiShim.unsendMessage(msgId || ctx.messageID, ctx.chat)
+          };
           return await entryFn({
             input: {
               arguments: ctx.args,
               text: ctx.body,
-              raw: ctx.raw
+              raw: ctx.raw,
+              body: ctx.body,
+              args: ctx.args
             },
-            output: {
-              reply: (msg) => ctx.message.reply(msg),
-              send: (msg) => ctx.message.send(msg)
-            },
-            event: ctx
+            output: outputObj,
+            event: ctx,
+            api: apiShim,
+            sock: ctx.sock
           });
         } else if (typeof command === 'function') {
           return await command(ctx.sock, ctx.chat, ctx.m, ctx.args);

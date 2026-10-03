@@ -6,7 +6,7 @@ module.exports = async function (uriConnect) {
 				const dashBoardModel = require("../models/mongodb/userDashBoard.js");
 				const globalModel = require("../models/mongodb/global.js");
 
-				await mongoose.connect(uriConnect);
+				await mongoose.connect(uriConnect, { serverSelectionTimeoutMS: 5000 });
 
 				return {
 								threadModel,

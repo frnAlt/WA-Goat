@@ -5,24 +5,40 @@ process.env.VERCEL = "1";
 process.env.NO_SERVER_LISTEN = "1";
 
 // Lightweight globals initialization for serverless execution
-if (!global.GoatBot) {
+if (!global.GoatBot || !global.ST) {
 	let config = {};
 	try {
-		config = require(path.join(process.cwd(), "src/config"));
+		config = require(path.resolve(__dirname, "../src/config"));
 	} catch (_) {
-		config = {
-			nickNameBot: "Goat Bot V2 🐐",
-			prefix: "!",
-			botOff: false,
-			adminBot: ["1234567890"],
-			database: { type: "json" },
-			dashBoard: { port: 5000, expireVerifyCode: 300 }
-		};
+		try {
+			config = require(path.resolve(__dirname, "../config.json"));
+		} catch (__err) {
+			config = {
+				botName: "Goat Bot V2 🐐",
+				nickNameBot: "Goat Bot V2 🐐",
+				prefix: "!",
+				language: "en",
+				botOff: false,
+				ownerName: "Farhan",
+				ownerNumber: "1234567890",
+				adminBot: ["1234567890"],
+				database: { type: "json" },
+				dashBoard: { port: 3000, expireVerifyCode: 300000 }
+			};
+		}
 	}
-	global.GoatBot = {
+	global.GoatBot = global.GoatBot || {
 		config,
-		configCommands: {},
-		commands: new Map()
+		configCommands: { commandUnload: [], commandEventUnload: [], commandAllowLoad: [] },
+		commands: new Map(),
+		events: new Map()
+	};
+	global.ST = global.ST || {
+		config,
+		configCommands: global.GoatBot.configCommands,
+		cmds: global.GoatBot.commands,
+		events: global.GoatBot.events,
+		startTime: Date.now()
 	};
 }
 

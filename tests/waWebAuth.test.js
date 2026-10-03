@@ -135,4 +135,37 @@ test('WhatsApp Web Access Token & Session Auth Suite', async (t) => {
       await fs.remove(tmpDir);
     }
   });
+
+  await t.test('wa_web.json format support and session restoration verification', async () => {
+    const tmpDir = path.join(os.tmpdir(), `wa-test-wa-web-json-${Date.now()}`);
+    const mockWaWebPath = path.join(tmpDir, 'wa_web.json');
+    const mockSessionDir = path.join(tmpDir, 'auth');
+    await fs.ensureDir(mockSessionDir);
+
+    try {
+      const token = encodeWaWebToken(dummyCreds);
+      await fs.writeJson(mockWaWebPath, {
+        wa_web_access_token: token,
+        description: 'Test session file'
+      }, { spaces: 2 });
+
+      // 1. Verify parseWaWebToken parses JSON file contents directly
+      const rawJson = await fs.readFile(mockWaWebPath, 'utf8');
+      const parsed = parseWaWebToken(rawJson);
+      assert.ok(parsed, 'wa_web.json content must be parseable');
+      assert.strictEqual(parsed.creds.registrationId, 12345);
+      assert.strictEqual(parsed.creds.me.id, '628123456789:1@s.whatsapp.net');
+
+      // 2. Verify applyWaWebToken creates valid session in directory
+      const applyRes = await applyWaWebToken(rawJson, mockSessionDir, { syncRootFiles: false });
+      assert.strictEqual(applyRes.success, true);
+      assert.strictEqual(await hasValidSession(mockSessionDir), true);
+
+      // 3. Verify creds.json was created with valid credentials
+      const credsOnDisk = await fs.readJson(path.join(mockSessionDir, 'creds.json'));
+      assert.strictEqual(credsOnDisk.registrationId, 12345);
+    } finally {
+      await fs.remove(tmpDir);
+    }
+  });
 });

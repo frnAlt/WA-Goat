@@ -28,7 +28,7 @@ const taskQueue = new TaskQueue(function (task, callback) {
         }
 });
 
-const { creatingUserData } = global.client.database;
+const { creatingUserData = [] } = (global.client && global.client.database) || {};
 
 module.exports = async function (databaseType, userModel, api, fakeGraphql) {
         let Users = [];

@@ -35,4 +35,31 @@ test('Database Layer Operations', async (t) => {
 
     database.threadsData.remove(testGroup);
   });
+
+  await t.test('MongoDB optional resilience and graceful fallback', async () => {
+    // 1. Unified src/database init fallback
+    const origType = process.env.DATABASE_TYPE;
+    const origUri = process.env.MONGODB_URI;
+    try {
+      process.env.DATABASE_TYPE = 'mongodb';
+      process.env.MONGODB_URI = 'mongodb://127.0.0.1:27019/non_existent_wa_goat_test';
+      const initResult = await database.init();
+      assert.strictEqual(initResult, true);
+    } finally {
+      if (origType !== undefined) process.env.DATABASE_TYPE = origType;
+      else delete process.env.DATABASE_TYPE;
+      if (origUri !== undefined) process.env.MONGODB_URI = origUri;
+      else delete process.env.MONGODB_URI;
+    }
+
+    // 2. Classic database controller fallback
+    try {
+      const controllerInit = require('../database/controller/index.js');
+      const res = await controllerInit({});
+      assert.ok(res, 'Controller init must return database controller object');
+      assert.ok(res.databaseType === 'json' || res.databaseType === 'mongodb');
+    } catch (e) {
+      assert.fail(`Controller init should not throw when MongoDB is unavailable: ${e.message}`);
+    }
+  });
 });

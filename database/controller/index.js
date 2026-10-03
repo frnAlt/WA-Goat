@@ -1,6 +1,24 @@
 const { graphQlQueryToJson } = require("graphql-query-to-json");
 const ora = require("ora");
+const path = require("path");
 global.utils = global.utils || {};
+if (!global.utils.TaskQueue) {
+	try {
+		Object.assign(global.utils, require(path.resolve(__dirname, "../../utils.js")));
+	} catch (_) {
+		global.utils.TaskQueue = class TaskQueue { constructor(fn) { this.fn = fn; } push(task, cb) { if (this.fn) this.fn(task, cb || (() => {})); } };
+		global.utils.CustomError = class CustomError extends Error {};
+		global.utils.getType = (obj) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+	}
+}
+global.client = global.client || {};
+global.client.database = global.client.database || {
+	creatingThreadData: [],
+	creatingUserData: [],
+	creatingDashBoardData: [],
+	creatingGlobalData: [],
+	creatingBankData: []
+};
 const log = global.utils.log || { info: console.log, err: console.error, warn: console.warn };
 const getText = global.utils.getText || ((...a) => a.join(" "));
 global.GoatBot = global.GoatBot || {};
@@ -12,7 +30,7 @@ if (!global.GoatBot.config) {
 	}
 }
 const config = global.GoatBot.config || {};
-let databaseType = config.database ? config.database.type : "json";
+let databaseType = process.env.DATABASE_TYPE || (config.database ? config.database.type : "json");
 
 // with add null if not found data
 function fakeGraphql(query, data, obj = {}) {
@@ -184,6 +202,14 @@ const controllerInit = async function (api) {
 	var threadModel, userModel, dashBoardModel, globalModel, sequelize = null;
 	switch (databaseType) {
 		case "mongodb": {
+			const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || config.database?.uriMongodb || config.database?.uri;
+			if (!mongoUri) {
+				log.warn("MONGODB", "MongoDB is optional: no MONGODB_URI found. Automatically falling back to portable JSON database engine.");
+				databaseType = "json";
+				if (config.database) config.database.type = "json";
+				if (global.ST?.config?.database) global.ST.config.database.type = "json";
+				break;
+			}
 			const spin = ora({
 				text: getText('indexController', 'connectingMongoDB'),
 				spinner: {
@@ -200,7 +226,7 @@ const controllerInit = async function (api) {
 			process.stderr.clearLine = function () { };
 			spin.start();
 			try {
-				var { threadModel, userModel, dashBoardModel, globalModel } = await require("../connectDB/connectMongoDB.js")(config.database.uriMongodb);
+				var { threadModel, userModel, dashBoardModel, globalModel } = await require("../connectDB/connectMongoDB.js")(mongoUri);
 				spin.stop();
 				process.stderr.clearLine = defaultClearLine;
 				log.info("MONGODB", getText("indexController", "connectMongoDBSuccess"));
@@ -208,8 +234,10 @@ const controllerInit = async function (api) {
 			catch (err) {
 				spin.stop();
 				process.stderr.clearLine = defaultClearLine;
-				log.err("MONGODB", getText("indexController", "connectMongoDBError"), err);
-				process.exit();
+				log.warn("MONGODB", `MongoDB is optional: connection note (${err.message}). Automatically falling back to portable JSON database engine.`);
+				databaseType = "json";
+				if (config.database) config.database.type = "json";
+				if (global.ST?.config?.database) global.ST.config.database.type = "json";
 			}
 			break;
 		}

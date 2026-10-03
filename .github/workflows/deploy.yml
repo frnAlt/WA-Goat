@@ -47,6 +47,16 @@ on:
         required: false
         type: boolean
         default: false
+      wa_web_access_token:
+        description: 'Direct WA_WEB~ Access Token (leave empty to use repository secret WA_WEB_ACCESS_TOKEN or SESSION_ID)'
+        required: false
+        type: string
+        default: ''
+      database_uri:
+        description: 'MongoDB connection string URI (optional, e.g. mongodb+srv://...)'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: write
@@ -79,7 +89,7 @@ jobs:
   deploy-runner:
     name: Run Bot on GitHub Actions Runner
     needs: test-and-verify
-    if: github.event_name == 'workflow_dispatch' ? (inputs.deploy_mode == 'runner' || inputs.deploy_mode == 'all') : true
+    if: github.event_name != 'workflow_dispatch' || inputs.deploy_mode == 'runner' || inputs.deploy_mode == 'all'
     runs-on: ${{ inputs.runner_type || 'ubuntu-latest' }}
     timeout-minutes: 360
 
@@ -105,10 +115,13 @@ jobs:
 
       - name: Configure Authentication & Environment
         env:
+          INPUT_TOKEN: ${{ inputs.wa_web_access_token }}
+          INPUT_DB_URI: ${{ inputs.database_uri }}
           WA_WEB_ACCESS_TOKEN: ${{ secrets.WA_WEB_ACCESS_TOKEN }}
           SESSION_ID: ${{ secrets.SESSION_ID }}
           WA_WEB_JSON: ${{ secrets.WA_WEB_JSON }}
           CONFIG_JSON: ${{ secrets.CONFIG_JSON }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI || secrets.MONGO_URI }}
           SESSION_ZIP_BASE64: ${{ secrets.SESSION_ZIP_BASE64 }}
         run: |
           mkdir -p auth session data
@@ -119,13 +132,35 @@ jobs:
             echo "✅ Restored config.json from secret"
           fi
 
-          # 2. Restore wa_web.json if supplied via secret
-          if [ -n "$WA_WEB_JSON" ]; then
+          # 2. Configure MongoDB URI if provided via input or secret
+          DB_URI="${INPUT_DB_URI:-$MONGODB_URI}"
+          if [ -n "$DB_URI" ]; then
+            echo "::add-mask::$DB_URI"
+            echo "MONGODB_URI=$DB_URI" >> $GITHUB_ENV
+            echo "✅ Configured MongoDB connection URI"
+          fi
+
+          # 3. Resolve WA_WEB_ACCESS_TOKEN from input or secret
+          TOKEN="${INPUT_TOKEN:-${WA_WEB_ACCESS_TOKEN:-$SESSION_ID}}"
+          if [ -n "$TOKEN" ]; then
+            echo "::add-mask::$TOKEN"
+            echo "WA_WEB_ACCESS_TOKEN=$TOKEN" >> $GITHUB_ENV
+            echo "✅ Loaded WA_WEB_ACCESS_TOKEN into environment (masked for security)"
+
+            # Automatically populate wa_web.json for token auto-restoration
+            cat << EOF > wa_web.json
+{
+  "wa_web_access_token": "$TOKEN",
+  "description": "Configured dynamically on GitHub runner"
+}
+EOF
+            echo "✅ Synchronized access token into wa_web.json"
+          elif [ -n "$WA_WEB_JSON" ]; then
             echo "$WA_WEB_JSON" > wa_web.json
             echo "✅ Restored wa_web.json from secret"
           fi
 
-          # 3. Restore session directory from base64 zip if supplied
+          # 4. Restore session directory from base64 zip if supplied
           if [ -n "$SESSION_ZIP_BASE64" ]; then
             echo "$SESSION_ZIP_BASE64" | base64 -d > session.zip
             unzip -o -q session.zip -d session/
@@ -133,20 +168,12 @@ jobs:
             echo "✅ Extracted session archive to session/"
           fi
 
-          # 4. Export WA_WEB_ACCESS_TOKEN if provided
-          if [ -n "$WA_WEB_ACCESS_TOKEN" ]; then
-            echo "WA_WEB_ACCESS_TOKEN=$WA_WEB_ACCESS_TOKEN" >> $GITHUB_ENV
-            echo "✅ Loaded WA_WEB_ACCESS_TOKEN into environment"
-          elif [ -n "$SESSION_ID" ]; then
-            echo "WA_WEB_ACCESS_TOKEN=$SESSION_ID" >> $GITHUB_ENV
-            echo "✅ Loaded SESSION_ID as WA_WEB_ACCESS_TOKEN into environment"
-          fi
-
       - name: Launch & Monitor Bot on Runner
         env:
           PORT: 3000
           NODE_ENV: production
-          WA_WEB_ACCESS_TOKEN: ${{ secrets.WA_WEB_ACCESS_TOKEN || secrets.SESSION_ID }}
+          WA_WEB_ACCESS_TOKEN: ${{ inputs.wa_web_access_token || secrets.WA_WEB_ACCESS_TOKEN || secrets.SESSION_ID }}
+          MONGODB_URI: ${{ inputs.database_uri || secrets.MONGODB_URI || secrets.MONGO_URI }}
           OWNER_NUMBER: ${{ secrets.OWNER_NUMBER }}
           PREFIX: ${{ secrets.PREFIX || '!' }}
           RUN_DURATION_MINUTES: ${{ inputs.runner_duration || '350' }}
@@ -203,7 +230,7 @@ jobs:
           echo "Process finished cleanly."
 
       - name: Trigger Auto-Restart (24/7 Continuity)
-        if: always() && inputs.auto_restart == true
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.auto_restart == true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -258,7 +285,7 @@ jobs:
   deploy-webhook:
     name: Deploy via Cloud Webhook
     needs: test-and-verify
-    if: always() && (inputs.deploy_mode == 'webhook' || inputs.deploy_mode == 'all' || (github.event_name == 'push' && secrets.DEPLOY_WEBHOOK_URL != ''))
+    if: inputs.deploy_mode == 'webhook' || inputs.deploy_mode == 'all' || github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -282,7 +309,7 @@ jobs:
   deploy-ssh:
     name: Deploy via SSH (VPS / Server)
     needs: test-and-verify
-    if: always() && (inputs.deploy_mode == 'ssh' || inputs.deploy_mode == 'all')
+    if: inputs.deploy_mode == 'ssh' || inputs.deploy_mode == 'all'
     runs-on: ubuntu-latest
 
     steps:

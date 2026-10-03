@@ -67,7 +67,8 @@ const config = {
   waWebAccessToken: process.env.WA_WEB_ACCESS_TOKEN || process.env.SESSION_ID || localConfig.waWebAccessToken || localConfig.wa_web_access_token || defaults.waWebAccessToken,
 
   database: {
-    type: (process.env.DATABASE_TYPE || localConfig.database?.type || defaults.database.type).toLowerCase(),
+    type: (process.env.DATABASE_TYPE || (process.env.MONGODB_URI || process.env.MONGO_URI ? 'mongodb' : localConfig.database?.type || defaults.database?.type || 'json')).toLowerCase(),
+    uri: process.env.MONGODB_URI || process.env.MONGO_URI || localConfig.database?.uri || defaults.database?.uri || '',
     storagePath: path.resolve(process.cwd(), localConfig.database?.storagePath || defaults.database.storagePath),
     sqlitePath: path.resolve(process.cwd(), process.env.DATABASE_URL || localConfig.database?.sqlitePath || defaults.database.sqlitePath)
   },

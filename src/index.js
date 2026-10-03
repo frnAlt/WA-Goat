@@ -46,6 +46,11 @@ async function main() {
   global.GoatBot.config = global.GoatBot.config || config;
   global.GoatBot.configCommands = global.GoatBot.configCommands || { commandUnload: [], commandEventUnload: [], commandAllowLoad: [] };
 
+  global.ST = global.ST || {};
+  global.ST.config = global.ST.config || config;
+  global.ST.configCommands = global.ST.configCommands || global.GoatBot.configCommands;
+  global.ST.startTime = global.ST.startTime || Date.now();
+
   // 2. Discover and Load Commands (Floppa / GoatBot scripts structure)
   const scriptsCmdsDir = path.resolve(process.cwd(), 'scripts/cmds');
   commandManager.loadFromDirectory(scriptsCmdsDir);
@@ -56,6 +61,12 @@ async function main() {
   const loadedEventCount = eventManager.loadFromDirectory(scriptsEventsDir);
   logger.info(`Loaded ${loadedEventCount} modular events.`);
 
+  // Attach command and event collections to runtime globals
+  global.ST.cmds = commandManager.getAll();
+  global.ST.events = eventManager.getAll();
+  global.GoatBot.commands = commandManager.getAll();
+  global.GoatBot.events = eventManager.getAll();
+
   // 4. Initialize Background Scheduler & Cleaners
   scheduler.init();
 
@@ -64,7 +75,7 @@ async function main() {
     try {
       const dashboardInit = require(path.resolve(process.cwd(), 'dashboard/app.js'));
       await dashboardInit();
-      logger.info(`Web Dashboard mounted on port ${config.dashBoard.port || 5000}`);
+      logger.info(`Web Dashboard mounted on port ${process.env.PORT || config.dashBoard.port || 5000}`);
     } catch (err) {
       logger.warn(`[DASHBOARD] Could not initialize web dashboard: ${err.message}`);
     }

@@ -1,0 +1,4 @@
+{
+  "wa_web_access_token": "",
+  "description": "WhatsApp Web Access Token session configuration template. Paste your WA_WEB~ token string or creds JSON here to connect automatically without QR code or pairing code."
+}
