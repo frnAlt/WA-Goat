@@ -14,7 +14,8 @@
     "start:mongo": "DATABASE_TYPE=mongodb node src/index.js",
     "dev": "node --watch src/index.js",
     "test": "node --test tests/*.test.js",
-    "check": "node tests/check.js"
+    "check": "node tests/check.js",
+    "token:export": "node scripts/exportToken.js"
   },
   "keywords": [
     "goat-bot",

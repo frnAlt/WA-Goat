@@ -173,6 +173,30 @@ async function restoreWaWebSession(sessionDir, options = {}) {
     return { restored: false, reason: 'Valid active session already exists' };
   }
 
+  // Cross-directory fallback: synchronize existing creds between ./auth and ./session
+  const candidateDirs = [
+    path.resolve(process.cwd(), 'auth'),
+    path.resolve(process.cwd(), 'session'),
+    path.resolve(process.cwd(), 'wca_auth')
+  ];
+
+  for (const altDir of candidateDirs) {
+    if (path.resolve(sessionDir) !== altDir && await hasValidSession(altDir)) {
+      try {
+        await fs.copy(altDir, sessionDir);
+        const credsPath = path.join(sessionDir, 'creds.json');
+        const raw = await fs.readFile(credsPath, 'utf8');
+        const creds = JSON.parse(raw, BufferJSON.reviver);
+        return {
+          restored: true,
+          source: `directory:${path.basename(altDir)}/`,
+          me: creds?.me || null,
+          token: encodeWaWebToken(creds)
+        };
+      } catch (_) {}
+    }
+  }
+
   const candidateSources = [
     { name: 'env:WA_WEB_ACCESS_TOKEN', content: process.env.WA_WEB_ACCESS_TOKEN },
     { name: 'env:SESSION_ID', content: process.env.SESSION_ID },

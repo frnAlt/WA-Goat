@@ -86,6 +86,7 @@ class CooldownManager {
 
 const onReplyMap = new TTLMap({ ttl: 20 * 60 * 1000 });
 const onReactionMap = new TTLMap({ ttl: 20 * 60 * 1000 });
+const botSentMessages = new TTLMap({ ttl: 5 * 60 * 1000 });
 const cooldownManager = new CooldownManager();
 
 module.exports = {
@@ -93,5 +94,6 @@ module.exports = {
   CooldownManager,
   onReplyMap,
   onReactionMap,
+  botSentMessages,
   cooldownManager
 };

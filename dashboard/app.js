@@ -246,6 +246,7 @@ module.exports = async (api) => {
                 // Skip password protection for API endpoints and static assets
                 const skipAuth = req.path.startsWith('/api/') || 
                                                                                 req.path.startsWith('/stats') || 
+                                                                                req.path.startsWith('/health') || 
                                                                                 req.path.startsWith('/system-info') ||
                                                                                 req.path.startsWith('/uptime') ||
                                                                                 req.path.startsWith('/css/') ||
@@ -1063,6 +1064,20 @@ module.exports = async (api) => {
                         const memUsage = process.memoryUsage();
                         const cpuUsage = process.cpuUsage();
 
+                        // Check real WhatsApp socket status
+                        let isWhatsAppConnected = false;
+                        let whatsAppUser = null;
+                        try {
+                                const client = require('../src/core/client');
+                                isWhatsAppConnected = Boolean(client?.sock?.user?.id);
+                                whatsAppUser = client?.sock?.user || null;
+                        } catch (_) {
+                                if (global.api?.sock?.user?.id) {
+                                        isWhatsAppConnected = true;
+                                        whatsAppUser = global.api.sock.user;
+                                }
+                        }
+
                         res.setHeader('Cache-Control', 'no-cache');
                         res.json({
                                 wcaVersion,
@@ -1083,7 +1098,11 @@ module.exports = async (api) => {
                                         user: cpuUsage.user,
                                         system: cpuUsage.system
                                 },
-                                status: 'online'
+                                status: isWhatsAppConnected ? 'online' : 'unconnected',
+                                whatsapp: {
+                                        connected: isWhatsAppConnected,
+                                        user: whatsAppUser
+                                }
                         });
                 } catch (error) {
                         console.error("Stats endpoint error:", error);
@@ -1092,6 +1111,31 @@ module.exports = async (api) => {
                                 timestamp: new Date().getTime()
                         });
                 }
+        });
+
+        // Dedicated health and readiness check endpoint
+        app.get("/health", (req, res) => {
+                let isWhatsAppConnected = false;
+                let whatsAppUser = null;
+                try {
+                        const client = require('../src/core/client');
+                        isWhatsAppConnected = Boolean(client?.sock?.user?.id);
+                        whatsAppUser = client?.sock?.user || null;
+                } catch (_) {
+                        if (global.api?.sock?.user?.id) {
+                                isWhatsAppConnected = true;
+                                whatsAppUser = global.api.sock.user;
+                        }
+                }
+
+                res.setHeader('Cache-Control', 'no-cache');
+                res.status(200).json({
+                        server: 'online',
+                        whatsapp: isWhatsAppConnected ? 'connected' : 'waiting_auth',
+                        user: whatsAppUser?.id || null,
+                        uptime: Math.floor(process.uptime()),
+                        timestamp: Date.now()
+                });
         });
 
         // System info endpoint  

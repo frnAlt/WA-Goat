@@ -7,6 +7,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const { smsg, parseMention, decodeJid } = require('../utils/myfunc');
 const permissions = require('./permissions');
+const { botSentMessages } = require('../services/cacheService');
 const logger = require('../utils/logger');
 const config = require('../config');
 
@@ -192,6 +193,9 @@ function createMessageHelper(sock, m) {
         const payload = await formatBaileysPayload(content, opts);
         const sendOpts = opts.quoted ? { quoted: opts.quoted } : {};
         const sent = await sock.sendMessage(dest, payload, sendOpts);
+        if (sent?.key?.id) {
+          botSentMessages.set(sent.key.id, true);
+        }
         if (callback) {
           callback(null, { messageID: sent?.key?.id, ...sent });
         }

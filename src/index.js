@@ -83,50 +83,52 @@ async function main() {
 
   // 5. Connect to WhatsApp via Baileys v7
   try {
-    const sock = await client.connect();
-
-    // Initialize and bridge Floppa-WCA Engine
-    try {
-      let buildAPI;
+    // Register socket listeners that re-bind on initial connect and every reconnect
+    client.onSocketCreated((sock) => {
+      // Initialize and bridge Floppa-WCA Engine
       try {
-        buildAPI = require(path.resolve(process.cwd(), 'floppa-wca')).buildAPI;
-      } catch (_) {
-        buildAPI = require(path.resolve(process.cwd(), 'wca')).buildAPI;
+        let buildAPI;
+        try {
+          buildAPI = require(path.resolve(process.cwd(), 'floppa-wca')).buildAPI;
+        } catch (_) {
+          buildAPI = require(path.resolve(process.cwd(), 'wca')).buildAPI;
+        }
+        const wcaApi = buildAPI(sock, {
+          selfID: sock.user?.id || '',
+          sock,
+          globalOptions: config.wca || {}
+        });
+        global.floppaWca = wcaApi;
+        global.wcaApi = wcaApi;
+        global.api = wcaApi;
+        global.GoatBot = global.GoatBot || {};
+        global.GoatBot.api = wcaApi;
+        logger.info('Floppa-WCA Engine & Conduit extensions mounted successfully.');
+      } catch (wcaErr) {
+        logger.warn(`[FLOPPA-WCA] Note: Engine wrapper could not be auto-bound: ${wcaErr.message}`);
       }
-      const wcaApi = buildAPI(sock, {
-        selfID: sock.user?.id || '',
-        sock,
-        globalOptions: config.wca || {}
+
+      // Bind Core Message Stream
+      sock.ev.on('messages.upsert', async (chatUpdate) => {
+        await handleMessages(sock, chatUpdate);
       });
-      global.floppaWca = wcaApi;
-      global.wcaApi = wcaApi;
-      global.api = wcaApi;
-      global.GoatBot = global.GoatBot || {};
-      global.GoatBot.api = wcaApi;
-      logger.info('Floppa-WCA Engine & Conduit extensions mounted successfully.');
-    } catch (wcaErr) {
-      logger.warn(`[FLOPPA-WCA] Note: Engine wrapper could not be auto-bound: ${wcaErr.message}`);
-    }
 
-    // Bind Core Message Stream
-    sock.ev.on('messages.upsert', async (chatUpdate) => {
-      await handleMessages(sock, chatUpdate);
+      // Bind Group Events
+      sock.ev.on('group-participants.update', async (update) => {
+        await handleGroupParticipantsUpdate(sock, update);
+      });
+
+      sock.ev.on('groups.update', async (updates) => {
+        await handleGroupUpdate(sock, updates);
+      });
+
+      // Bind Call Moderation
+      sock.ev.on('call', async (calls) => {
+        await handleCalls(sock, calls);
+      });
     });
 
-    // Bind Group Events
-    sock.ev.on('group-participants.update', async (update) => {
-      await handleGroupParticipantsUpdate(sock, update);
-    });
-
-    sock.ev.on('groups.update', async (updates) => {
-      await handleGroupUpdate(sock, updates);
-    });
-
-    // Bind Call Moderation
-    sock.ev.on('call', async (calls) => {
-      await handleCalls(sock, calls);
-    });
-
+    const sock = await client.connect();
   } catch (error) {
     logger.error('Failed to initialize WhatsApp connection:', error.message);
     process.exit(1);

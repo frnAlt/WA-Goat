@@ -159,9 +159,30 @@ jobs:
           if [ -n "$SESSION_ZIP_BASE64" ]; then
             echo "$SESSION_ZIP_BASE64" | base64 -d > session.zip
             unzip -o -q session.zip -d session/
+            cp -rf session/* auth/ 2>/dev/null || true
             rm session.zip
-            echo "✅ Extracted session archive to session/"
+            echo "✅ Extracted session archive to session/ and auth/"
           fi
+
+          # 5. Validate authentication credentials for headless runner
+          HAS_AUTH=false
+          if [ -n "$TOKEN" ] || [ -n "$WA_WEB_JSON" ] || [ -n "$SESSION_ZIP_BASE64" ]; then
+            HAS_AUTH=true
+          elif [ -f auth/creds.json ] || [ -f session/creds.json ]; then
+            HAS_AUTH=true
+          fi
+
+          if [ "$HAS_AUTH" != "true" ]; then
+            echo "::error::❌ No WhatsApp authentication credentials found!"
+            echo "::error::The GitHub Actions runner executes headlessly in the cloud and cannot show an interactive QR code in real-time."
+            echo "::error::To run WA-Goat on GitHub Actions, you must supply credentials via:"
+            echo "::error::  1. Repository Secret: 'WA_WEB_ACCESS_TOKEN' or 'SESSION_ID' (Settings -> Secrets and variables -> Actions)"
+            echo "::error::  2. Or Workflow input: 'wa_web_access_token' when triggering workflow_dispatch"
+            echo "::error::  3. Or Repository Secret: 'SESSION_ZIP_BASE64' containing your zipped auth directory"
+            echo "::error::Generate your token locally using 'npm run start:pair' or 'node scripts/exportToken.js'."
+            exit 1
+          fi
+          echo "✅ Authentication credentials verified for headless execution."
 
       - name: Launch & Monitor Bot on Runner
         env:
@@ -189,7 +210,7 @@ jobs:
           UP=false
           for i in {1..30}; do
             if curl -s -f "$HEALTH_URL" > /dev/null 2>&1 || curl -s -f "http://127.0.0.1:3000/" > /dev/null 2>&1; then
-              echo "✅ Health check passed! WA-Goat is live and listening on port 3000."
+              echo "✅ Health check passed! WA-Goat web dashboard is live and listening on port 3000."
               UP=true
               break
             fi
@@ -203,6 +224,24 @@ jobs:
 
           if [ "$UP" != "true" ]; then
             echo "⚠️ Health check timed out, but bot process is still alive. Continuing monitor loop..."
+          fi
+
+          # Monitor WhatsApp connection status
+          echo "Checking WhatsApp socket status..."
+          WA_CONNECTED=false
+          for i in {1..15}; do
+            STATUS=$(curl -s "http://127.0.0.1:3000/health" 2>/dev/null | jq -r '.whatsapp' 2>/dev/null || echo "")
+            if [ "$STATUS" = "connected" ]; then
+              USER_ID=$(curl -s "http://127.0.0.1:3000/health" 2>/dev/null | jq -r '.user' 2>/dev/null || echo "")
+              echo "✅ WhatsApp connected successfully! Logged in as: $USER_ID"
+              WA_CONNECTED=true
+              break
+            fi
+            sleep 3
+          done
+
+          if [ "$WA_CONNECTED" != "true" ]; then
+            echo "ℹ️ WhatsApp socket is continuing background initialization/connection..."
           fi
 
           # Keep-alive loop running up to RUN_DURATION_MINUTES

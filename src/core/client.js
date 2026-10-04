@@ -44,6 +44,7 @@ class WhatsAppClient {
     this.isReconnecting = false;
     this.retryCount = 0;
     this.maxRetries = 10;
+    this.socketListeners = [];
   }
 
   async connect() {
@@ -125,6 +126,15 @@ class WhatsAppClient {
     // Attach connection events
     this.bindConnectionEvents();
 
+    // Trigger registered socket listeners for the new socket
+    for (const listener of this.socketListeners) {
+      try {
+        listener(this.sock);
+      } catch (listenerErr) {
+        logger.error('[SOCKET_LISTENER_ERROR]', listenerErr.message);
+      }
+    }
+
     return this.sock;
   }
 
@@ -193,6 +203,27 @@ class WhatsAppClient {
   async setWaWebToken(token) {
     const sessionDir = path.resolve(process.cwd(), config.sessionPath);
     return applyWaWebToken(token, sessionDir);
+  }
+
+  onSocketCreated(listener) {
+    if (typeof listener === 'function') {
+      this.socketListeners.push(listener);
+      if (this.sock) {
+        try {
+          listener(this.sock);
+        } catch (err) {
+          logger.error('[SOCKET_LISTENER_ERROR]', err.message);
+        }
+      }
+    }
+  }
+
+  isLoggedIn() {
+    return Boolean(this.sock?.user?.id);
+  }
+
+  getUser() {
+    return this.sock?.user || null;
   }
 
   getSocket() {
