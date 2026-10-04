@@ -157,6 +157,17 @@ class WhatsAppClient {
         logger.info('WhatsApp Connected Successfully!');
         logger.master('LOGIN', `Logged in as: ${this.sock.user?.name || 'Bot'} (${this.sock.user?.id})`);
 
+        // If ownerNumber is unset or placeholder '1234567890', auto-set to the logged in account
+        const botNumber = this.sock.user?.id ? decodeJid(this.sock.user.id).replace(/[^0-9]/g, '') : '';
+        if (botNumber && (!config.ownerNumber || config.ownerNumber === '1234567890')) {
+          config.ownerNumber = botNumber;
+          config.ownerJid = `${botNumber}@s.whatsapp.net`;
+          if (Array.isArray(config.adminBot) && !config.adminBot.includes(botNumber)) {
+            config.adminBot.push(botNumber);
+          }
+          logger.info(`[CONFIG] Auto-configured logged in account (${botNumber}) as Bot Owner & Admin ✓`);
+        }
+
         // Automatically sync active session to wa_web.json and account.txt
         exportWaWebToken(path.resolve(process.cwd(), config.sessionPath)).then((res) => {
           if (res?.token) {

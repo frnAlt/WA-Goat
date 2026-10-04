@@ -29,20 +29,40 @@ class PermissionManager {
   /**
    * Check if a sender is Bot Owner
    */
-  isOwner(senderJid) {
+  isOwner(senderJid, sock = null) {
     const num = cleanNumber(senderJid);
     if (!num) return false;
-    return num === config.ownerNumber || (config.devUsers && config.devUsers.includes(num));
+
+    // Configured owner number and dev users
+    if (num === config.ownerNumber || (config.devUsers && config.devUsers.includes(num))) {
+      return true;
+    }
+
+    // Auto-detect logged-in bot account as owner (supports GitHub Actions headless runs)
+    try {
+      const client = require('./client');
+      const activeSock = sock || client?.sock || global.api?.sock;
+      const botNum = cleanNumber(activeSock?.user?.id || global.floppaWca?.selfID || global.api?.selfID);
+      if (botNum && num === botNum) {
+        return true;
+      }
+      // If ownerNumber is still default dummy '1234567890' or unconfigured, treat the bot account as owner
+      if ((!config.ownerNumber || config.ownerNumber === '1234567890') && botNum) {
+        return num === botNum;
+      }
+    } catch (_) {}
+
+    return false;
   }
 
   /**
    * Check if sender is Bot Admin (role 2+)
    */
-  isBotAdmin(senderJid) {
+  isBotAdmin(senderJid, sock = null) {
     const num = cleanNumber(senderJid);
     if (!num) return false;
-    if (this.isOwner(senderJid)) return true;
-    return config.adminBot && config.adminBot.includes(num);
+    if (this.isOwner(senderJid, sock)) return true;
+    return Boolean(config.adminBot && config.adminBot.includes(num));
   }
 
   /**
@@ -59,8 +79,8 @@ class PermissionManager {
    * Resolve maximum role for a sender in a specific chat
    */
   async getRole(sock, chatJid, senderJid) {
-    if (this.isOwner(senderJid)) return ROLES.OWNER;
-    if (this.isBotAdmin(senderJid)) return ROLES.BOT_ADMIN;
+    if (this.isOwner(senderJid, sock)) return ROLES.OWNER;
+    if (this.isBotAdmin(senderJid, sock)) return ROLES.BOT_ADMIN;
     if (this.isPremium(senderJid)) return ROLES.PREMIUM;
 
     if (chatJid && chatJid.endsWith('@g.us')) {

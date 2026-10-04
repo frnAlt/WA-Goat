@@ -77,6 +77,23 @@ function smsg(sock, m, store) {
   }
 
   if (m.message) {
+    // Unwrap ephemeral, viewOnce, and other container wrappers
+    if (m.message.ephemeralMessage) {
+      m.message = m.message.ephemeralMessage.message;
+    }
+    if (m.message.viewOnceMessage) {
+      m.message = m.message.viewOnceMessage.message;
+    }
+    if (m.message.viewOnceMessageV2) {
+      m.message = m.message.viewOnceMessageV2.message;
+    }
+    if (m.message.documentWithCaptionMessage) {
+      m.message = m.message.documentWithCaptionMessage.message;
+    }
+    if (m.message.editedMessage) {
+      m.message = m.message.editedMessage.message?.protocolMessage?.editedMessage || m.message.editedMessage.message;
+    }
+
     m.mtype = getContentType(m.message);
     m.msg = (m.mtype === 'viewOnceMessage' ? m.message[m.mtype].message[getContentType(m.message[m.mtype].message)] : m.message[m.mtype]);
     

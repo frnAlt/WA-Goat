@@ -294,8 +294,8 @@ async function normalizeMessage(sock, rawMsg) {
   const sender = m.sender || '';
   const isGroup = Boolean(m.isGroup);
   const isPrivate = !isGroup;
-  const isOwner = permissions.isOwner(sender);
-  const isBotAdmin = permissions.isBotAdmin(sender);
+  const isOwner = permissions.isOwner(sender, sock);
+  const isBotAdmin = permissions.isBotAdmin(sender, sock);
 
   // Group admin check
   let isAdmin = false;

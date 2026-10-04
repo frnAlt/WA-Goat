@@ -393,6 +393,13 @@ class CommandManager {
   }
 
   /**
+   * Check if a command or alias exists
+   */
+  has(nameOrAlias) {
+    return Boolean(this.get(nameOrAlias));
+  }
+
+  /**
    * Get all registered commands
    */
   getAll() {
