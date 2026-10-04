@@ -321,17 +321,18 @@ async function normalizeMessage(sock, rawMsg) {
 
   const commandManager = require('./command');
 
-  if (text.startsWith(botPrefix)) {
+  const trimmedText = text.trim();
+  if (trimmedText.startsWith(botPrefix)) {
     hasPrefix = true;
     usedPrefix = botPrefix;
-    const withoutPrefix = text.slice(botPrefix.length).trim();
+    const withoutPrefix = trimmedText.slice(botPrefix.length).trim();
     const parts = withoutPrefix.split(/\s+/);
     commandName = (parts[0] || '').toLowerCase();
     args = parts.slice(1);
     commandText = parts.slice(1).join(' ');
   } else {
     // Check if the first word directly matches any command (works in DM and group)
-    const parts = text.trim().split(/\s+/);
+    const parts = trimmedText.split(/\s+/);
     const candidate = (parts[0] || '').toLowerCase();
     if (candidate && commandManager.get(candidate)) {
       commandName = candidate;

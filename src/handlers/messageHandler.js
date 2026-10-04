@@ -134,20 +134,26 @@ async function handleMessages(sock, chatUpdate) {
         return;
       }
 
-      // 6. Chatbot AI trigger
+      // 6. Chatbot AI trigger (only if not a self-message or if explicitly mentioned)
       const botJid = decodeJid(sock.user?.id);
-      const isMentioned = ctx.mentions && ctx.mentions.includes(botJid);
-      const isGroupChatbotOn = isGroup && database.getGroupSettings(chat).chatbot;
-      const isPrivateChatbot = !isGroup && text.length > 1;
+      const isMentioned = Array.isArray(ctx.mentionedJid)
+        ? ctx.mentionedJid.some(j => decodeJid(j) === botJid)
+        : Boolean(ctx.mentions && (ctx.mentions[botJid] || (Array.isArray(ctx.mentions) && ctx.mentions.includes(botJid))));
 
-      if (isMentioned || isGroupChatbotOn || isPrivateChatbot) {
-        const cleanPrompt = text.replace(/@[0-9]+/g, '').trim();
-        if (cleanPrompt.length > 0) {
-          try {
-            message.typing(2000).catch(() => {});
-            const aiReply = await apiService.getAiResponse(cleanPrompt);
-            await message.reply(aiReply);
-          } catch (_) {}
+      if (!isFromMe || isMentioned) {
+        const groupSettings = isGroup ? (database.getGroupSettings(chat) || {}) : {};
+        const isGroupChatbotOn = isGroup && groupSettings.chatbot;
+        const isPrivateChatbot = !isGroup && !isFromMe && text.length > 1;
+
+        if (isMentioned || isGroupChatbotOn || isPrivateChatbot) {
+          const cleanPrompt = text.replace(/@[0-9]+/g, '').trim();
+          if (cleanPrompt.length > 0) {
+            try {
+              message.typing(2000).catch(() => {});
+              const aiReply = await apiService.getAiResponse(cleanPrompt);
+              await message.reply(aiReply);
+            } catch (_) {}
+          }
         }
       }
     }
